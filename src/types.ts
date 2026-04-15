@@ -12,6 +12,7 @@ export interface WindowState {
   y: number;
   width: number;
   height: number;
+  props?: any;
 }
 
 export interface AppConfig {

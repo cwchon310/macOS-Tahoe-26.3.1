@@ -5,6 +5,8 @@ import { useInstalledApps } from '../../context/InstalledAppsContext';
 import { FileIcon } from '../FileIcon';
 import { ContextMenu } from '../ContextMenu';
 
+import { AppID } from '../../types';
+
 const SIDEBAR_SECTIONS = [
   {
     id: 'favorites',
@@ -64,7 +66,37 @@ const RECENTS = [
 
 const DESKTOP = [
   { name: 'macOS-Tahoe-26.3.1.iso', type: 'iso' },
-  { name: 'Install macOS Tahoe.sh', type: 'script' },
+  { name: 'Install macOS Tahoe.sh', type: 'script', content: '#!/bin/bash\necho "Installing macOS Tahoe..."\nsleep 2\necho "Done!"' },
+  { 
+    name: 'config.plist', 
+    type: 'plist', 
+    content: `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>ACPI</key>
+    <dict>
+        <key>Add</key>
+        <array/>
+        <key>Quirks</key>
+        <dict>
+            <key>ResetLogoStatus</key>
+            <true/>
+        </dict>
+    </dict>
+    <key>Booter</key>
+    <dict>
+        <key>Quirks</key>
+        <dict>
+            <key>AvoidRuntimeDefrag</key>
+            <true/>
+            <key>EnableWriteUnprotector</key>
+            <true/>
+        </dict>
+    </dict>
+</dict>
+</plist>`
+  },
 ];
 
 const TRASH = [
@@ -72,7 +104,7 @@ const TRASH = [
   { name: 'Old Photo.jpg', type: 'image' },
 ];
 
-export const Finder: React.FC<{ initialPath?: string }> = ({ initialPath = '/Applications' }) => {
+export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, props?: any) => void }> = ({ initialPath = '/Applications', onOpenApp }) => {
   const { installedApps } = useInstalledApps();
   const [currentPath, setCurrentPath] = useState(initialPath);
   const [history, setHistory] = useState<string[]>([initialPath]);
@@ -166,6 +198,16 @@ export const Finder: React.FC<{ initialPath?: string }> = ({ initialPath = '/App
   const activeSidebarItem = SIDEBAR_SECTIONS.flatMap(s => s.items).reverse().find(item => 
     item.path && (currentPath === item.path || currentPath.startsWith(item.path + '/'))
   );
+
+  const handleFileOpen = (file: any) => {
+    if (file.type === 'folder' && file.path) {
+      navigateTo(file.path);
+    } else if (file.type === 'app') {
+      onOpenApp?.(file.target as AppID);
+    } else if (file.content || file.type === 'plist' || file.type === 'script' || file.type === 'text') {
+      onOpenApp?.('textedit', { content: file.content, name: file.name });
+    }
+  };
 
   const handleContextMenu = (e: React.MouseEvent, file: any) => {
     e.preventDefault();
@@ -316,7 +358,7 @@ export const Finder: React.FC<{ initialPath?: string }> = ({ initialPath = '/App
                 onDragOver={(e) => file.type === 'folder' ? e.preventDefault() : null}
                 onDrop={(e) => file.type === 'folder' && file.path ? handleDrop(e, file.path) : null}
                 className="flex flex-col items-center gap-1 group cursor-default"
-                onDoubleClick={() => file.type === 'folder' && file.path && navigateTo(file.path)}
+                onDoubleClick={() => handleFileOpen(file)}
                 onMouseEnter={() => setHoveredFile(file)}
                 onMouseLeave={() => setHoveredFile(null)}
                 onContextMenu={(e) => handleContextMenu(e, file)}
@@ -346,11 +388,15 @@ export const Finder: React.FC<{ initialPath?: string }> = ({ initialPath = '/App
                 exit={{ width: 0, opacity: 0 }}
                 className="bg-black/20 border-l border-white/10 flex flex-col items-center p-6 shrink-0 overflow-hidden"
               >
-                <div className="w-32 h-32 flex items-center justify-center mb-6">
+                <div className="w-32 h-32 flex items-center justify-center mb-6 relative group/preview">
                   {hoveredFile.type === 'app' && hoveredFile.icon ? (
                     <img src={hoveredFile.icon} className="w-24 h-24 object-contain drop-shadow-2xl" referrerPolicy="no-referrer" />
                   ) : hoveredFile.type === 'folder' ? (
                     <img src="https://img.icons8.com/fluency/96/mac-folder.png" className="w-24 h-24 object-contain drop-shadow-2xl" />
+                  ) : hoveredFile.content ? (
+                    <div className="w-full h-full bg-white/5 rounded-lg border border-white/10 p-2 overflow-hidden text-[8px] font-mono text-white/40 leading-tight select-none">
+                      {hoveredFile.content}
+                    </div>
                   ) : (
                     <FileIcon name={hoveredFile.name} className="w-24 h-32" />
                   )}
@@ -385,7 +431,7 @@ export const Finder: React.FC<{ initialPath?: string }> = ({ initialPath = '/App
           y={contextMenu.y}
           onClose={() => setContextMenu(null)}
           items={[
-            { label: 'Open', onClick: () => contextMenu.file.type === 'folder' && contextMenu.file.path && navigateTo(contextMenu.file.path) },
+            { label: 'Open', onClick: () => handleFileOpen(contextMenu.file) },
             { label: 'Get Info', onClick: () => setInfoModal(contextMenu.file) },
             { label: '', divider: true },
             { label: 'Move to Trash', onClick: () => {}, danger: true },

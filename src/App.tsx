@@ -11,6 +11,7 @@ import { Terminal } from './components/apps/Terminal';
 import { Calculator } from './components/apps/Calculator';
 import { Settings } from './components/apps/Settings';
 import { Notes } from './components/apps/Notes';
+import { TextEdit } from './components/apps/TextEdit';
 import { Siri } from './components/Siri';
 import { ControlCenter } from './components/ControlCenter';
 import { Spotlight } from './components/Spotlight';
@@ -41,7 +42,32 @@ const Desktop = () => {
   const [aboutPos, setAboutPos] = React.useState({ x: 100, y: 100 });
   const [isMissionControlActive, setIsMissionControlActive] = React.useState(false);
 
-  const [desktopItems, setDesktopItems] = React.useState<any[]>([]);
+  const [desktopItems, setDesktopItems] = React.useState<any[]>([
+    {
+      id: 'config-plist',
+      name: 'config.plist',
+      type: 'file',
+      fileType: 'plist',
+      content: `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>ACPI</key>
+    <dict>
+        <key>Add</key>
+        <array/>
+        <key>Quirks</key>
+        <dict>
+            <key>ResetLogoStatus</key>
+            <true/>
+        </dict>
+    </dict>
+</dict>
+</plist>`,
+      x: 20,
+      y: 20
+    }
+  ]);
 
   const [selectedDesktopItem, setSelectedDesktopItem] = React.useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; targetId: string | null }>({
@@ -213,15 +239,16 @@ const Desktop = () => {
     e.preventDefault();
   };
 
-  const renderAppContent = React.useCallback((id: AppID) => {
+  const renderAppContent = React.useCallback((id: AppID, props?: any) => {
     switch (id) {
       case 'safari': return <Safari />;
       case 'chrome': return <Safari />; // Use Safari component for Chrome
-      case 'finder': return <Finder />;
+      case 'finder': return <Finder onOpenApp={handleOpenApp} />;
       case 'terminal': return <Terminal />;
       case 'calculator': return <Calculator />;
       case 'settings': return <Settings />;
       case 'notes': return <Notes />;
+      case 'textedit': return <TextEdit initialContent={props?.content} fileName={props?.name} />;
       case 'appstore': return <AppStore />;
       case 'wechat': return <WeChat />;
       case 'apps': return <Apps onOpenApp={handleOpenApp} />;
@@ -335,7 +362,7 @@ const Desktop = () => {
           onShade={() => toggleShade(window.id)}
           onGeometryChange={(x, y, width, height) => updateWindowGeometry(window.id, x, y, width, height)}
         >
-          {renderAppContent(window.id)}
+          {renderAppContent(window.id, window.props)}
         </Window>
       );
     });
@@ -445,7 +472,11 @@ const Desktop = () => {
                 }}
                 onDoubleClick={(e) => {
                   e.stopPropagation();
-                  if (item.type === 'app') handleOpenApp(item.target as AppID);
+                  if (item.type === 'app') {
+                    handleOpenApp(item.target as AppID);
+                  } else if (item.content || item.fileType === 'plist' || item.fileType === 'script') {
+                    handleOpenApp('textedit', { content: item.content, name: item.name });
+                  }
                 }}
                 onContextMenu={(e) => handleContextMenu(e, item.id)}
               >
@@ -485,7 +516,11 @@ const Desktop = () => {
               ] : [
                 { label: 'Open', onClick: () => {
                   const item = desktopItems.find(i => i.id === contextMenu.targetId);
-                  if (item?.type === 'app') handleOpenApp(item.target as AppID);
+                  if (item?.type === 'app') {
+                    handleOpenApp(item.target as AppID);
+                  } else if (item?.content || item?.fileType === 'plist' || item?.fileType === 'script') {
+                    handleOpenApp('textedit', { content: item.content, name: item.name });
+                  }
                 }},
                 { label: 'Delete', onClick: () => contextMenu.targetId && deleteDesktopItem(contextMenu.targetId), danger: true }
               ]}

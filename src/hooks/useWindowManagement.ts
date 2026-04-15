@@ -54,10 +54,10 @@ export function useWindowManagement() {
     setActiveApp(id);
   }, [maxZIndex]);
 
-  const openApp = useCallback((id: AppID) => {
+  const openApp = useCallback((id: AppID, props?: any) => {
     setWindows(prev => ({
       ...prev,
-      [id]: { ...prev[id], isOpen: true, isMinimized: false }
+      [id]: { ...prev[id], isOpen: true, isMinimized: false, props: props || prev[id].props }
     }));
     focusWindow(id);
   }, [focusWindow]);
