@@ -387,6 +387,19 @@ const Desktop = () => {
           onShutDown={() => setBootState('booting')}
           onLogOut={() => setBootState('login')}
         />
+
+        {/* Mission Control Overlay */}
+        <AnimatePresence>
+          {isMissionControlActive && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/20 backdrop-blur-md z-[9998]"
+              onClick={() => setIsMissionControlActive(false)}
+            />
+          )}
+        </AnimatePresence>
         
         <main 
           className="absolute inset-0 pt-7 pb-20"

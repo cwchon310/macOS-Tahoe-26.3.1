@@ -53,7 +53,12 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
   const targetWidth = 48 * magnificationFactor;
 
   const widthSync = useTransform(distance, [-150, 0, 150], [48, targetWidth, 48]);
-  const width = useSpring(widthSync, { mass: 0.1, stiffness: 200, damping: 15 });
+  const width = useSpring(widthSync, { 
+    mass: 0.1, 
+    stiffness: 150, 
+    damping: 12,
+    restDelta: 0.001
+  });
 
   const isCalendar = app.id === 'calendar';
   const isLaunchpad = app.id === 'apps';

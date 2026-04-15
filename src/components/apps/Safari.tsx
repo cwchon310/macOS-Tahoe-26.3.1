@@ -110,20 +110,24 @@ export const Safari: React.FC = () => {
     <div className={`flex flex-col h-full text-white overflow-hidden rounded-b-xl transition-colors duration-300 ${isPrivateMode ? 'bg-[#121212]' : 'bg-[#1e1e1e]'}`}>
       
       {/* Tab Bar */}
-      <div className={`h-10 flex items-end px-2 gap-1 pt-2 shrink-0 ${isPrivateMode ? 'bg-[#1a1a1a]' : 'bg-[#252525]'}`}>
-        <div className="flex-1 flex gap-1 overflow-x-auto no-scrollbar items-end h-full">
+      <div className={`h-11 flex items-center px-2 gap-1 pt-1 shrink-0 ${isPrivateMode ? 'bg-[#1a1a1a]' : 'bg-[#252525]'}`}>
+        <div className="flex-1 flex gap-1 overflow-x-auto no-scrollbar items-center h-full">
           {visibleTabs.map(tab => (
             <div 
               key={tab.id}
               onClick={() => setActiveTabId(tab.id)}
-              className={`group relative flex items-center justify-between min-w-[120px] max-w-[200px] h-8 px-3 rounded-t-lg cursor-pointer transition-colors text-[12px] font-medium border-r border-white/5 last:border-r-0 ${
+              className={`group relative flex items-center justify-between min-w-[140px] max-w-[220px] h-8 px-3 rounded-md cursor-pointer transition-all text-[12px] font-medium ${
                 activeTabId === tab.id 
-                  ? (isPrivateMode ? 'bg-[#2d2d2d] text-white' : 'bg-[#2d2d2d] text-white') 
+                  ? (isPrivateMode ? 'bg-[#3d3d3d] text-white shadow-lg' : 'bg-[#454545] text-white shadow-lg') 
                   : (isPrivateMode ? 'bg-transparent text-white/50 hover:bg-white/5' : 'bg-transparent text-white/50 hover:bg-white/5')
               }`}
             >
               <div className="flex items-center gap-2 overflow-hidden">
-                {tab.isPrivate ? <EyeOff size={12} className="shrink-0" /> : <img src={`https://www.google.com/s2/favicons?domain=${tab.url}`} className="w-3 h-3 shrink-0 opacity-80" alt="" />}
+                {tab.isPrivate ? (
+                  <EyeOff size={12} className="shrink-0 text-purple-400" />
+                ) : (
+                  <img src={`https://www.google.com/s2/favicons?domain=${tab.url}`} className="w-3.5 h-3.5 shrink-0 opacity-80" alt="" />
+                )}
                 <span className="truncate">{tab.title}</span>
               </div>
               <div 
@@ -134,13 +138,11 @@ export const Safari: React.FC = () => {
               </div>
             </div>
           ))}
-        </div>
-        <div className="flex items-center gap-2 pb-1.5 px-2">
           <div 
             onClick={createNewTab}
-            className="w-6 h-6 rounded flex items-center justify-center hover:bg-white/10 cursor-pointer transition-colors text-white/70 hover:text-white"
+            className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-white/10 cursor-pointer transition-colors text-white/70 hover:text-white shrink-0 ml-1"
           >
-            <Plus size={16} />
+            <Plus size={18} />
           </div>
         </div>
       </div>

@@ -255,6 +255,20 @@ export const Window: React.FC<WindowProps> = memo(({
         {children}
       </div>
 
+      {/* Mission Control Title */}
+      <AnimatePresence>
+        {isMissionControl && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="absolute -top-10 left-1/2 -translate-x-1/2 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-bold whitespace-nowrap shadow-xl border border-white/10"
+          >
+            {windowState.title}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Resize Handles */}
       {!windowState.isMaximized && !windowState.isShaded && !isMissionControl && (
         <>
