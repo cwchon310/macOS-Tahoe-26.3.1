@@ -481,7 +481,7 @@ const Desktop = () => {
                 onContextMenu={(e) => handleContextMenu(e, item.id)}
               >
                 <div className={`p-1 rounded-lg transition-colors ${selectedDesktopItem === item.id ? 'bg-black/20' : ''}`}>
-                  {item.type === 'app' || (item.type === 'file' && item.icon.startsWith('blob:')) ? (
+                  {item.type === 'app' || (item.type === 'file' && item.icon?.startsWith('blob:')) ? (
                     <img 
                       src={item.icon} 
                       className={`w-16 h-16 drop-shadow-2xl transition-transform object-cover rounded-lg ${selectedDesktopItem === item.id ? 'brightness-75' : ''}`} 

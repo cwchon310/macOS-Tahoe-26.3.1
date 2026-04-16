@@ -315,7 +315,7 @@ export const Terminal: React.FC = () => {
       <div className="max-w-full">
         {history.map((line, i) => (
           <div key={i} className="mb-0.5 whitespace-pre-wrap break-all">
-            {line.startsWith('guest@macbook') ? (
+            {typeof line === 'string' && line.startsWith('guest@macbook') ? (
               <>
                 <span className="text-[#50fa7b]">guest@macbook</span>
                 <span className="text-white"> </span>

@@ -196,8 +196,12 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
   );
 
   const activeSidebarItem = SIDEBAR_SECTIONS.flatMap(s => s.items).reverse().find(item => 
-    item.path && (currentPath === item.path || currentPath.startsWith(item.path + '/'))
+    item.path && currentPath && (currentPath === item.path || currentPath.startsWith(item.path + '/'))
   );
+
+  const activeSectionId = SIDEBAR_SECTIONS.find(s => 
+    s.items.some(item => item.path === activeSidebarItem?.path)
+  )?.id;
 
   const handleFileOpen = (file: any) => {
     if (file.type === 'folder' && file.path) {
@@ -246,50 +250,67 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
           </div>
         </div>
         <div className="flex-1 overflow-y-auto px-2 pb-4 custom-scrollbar">
-          {SIDEBAR_SECTIONS.map((section) => (
-            <div key={section.id} className="mb-4">
-              <div 
-                onClick={() => toggleSection(section.id)}
-                className="flex items-center justify-between px-3 py-1 text-[11px] font-bold text-white/40 uppercase tracking-wider cursor-default group hover:text-white/60 transition-colors"
-              >
-                <span>{section.label}</span>
-                <ChevronRight 
-                  size={12} 
-                  className={`transition-transform duration-200 ${expandedSections[section.id] ? 'rotate-90' : ''} opacity-0 group-hover:opacity-100`} 
-                />
-              </div>
-              
-              <div className={`mt-1 space-y-0.5 overflow-hidden transition-all duration-300 ${expandedSections[section.id] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                {section.items.map((item, i) => {
-                  const isActive = activeSidebarItem?.path === item.path;
-                  return (
-                    <div 
-                      key={i}
-                      onClick={() => item.path && navigateTo(item.path)}
-                      onDragOver={(e) => e.preventDefault()}
-                      onDrop={(e) => item.path && handleDrop(e, item.path)}
-                      className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-150 cursor-default group active:scale-[0.98] relative ${
-                        isActive 
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' 
-                          : 'text-white/80 hover:bg-white/10 hover:text-white'
-                      }`}
-                    >
-                      <item.icon 
-                        size={16} 
-                        className={`transition-all duration-200 group-hover:scale-110 ${
+          {SIDEBAR_SECTIONS.map((section) => {
+            const isSectionActive = activeSectionId === section.id;
+            return (
+              <div key={section.id} className="mb-4">
+                <div 
+                  onClick={() => toggleSection(section.id)}
+                  className={`flex items-center justify-between px-3 py-1 text-[11px] font-bold uppercase tracking-wider cursor-default group transition-colors ${
+                    isSectionActive ? 'text-white/70' : 'text-white/30 hover:text-white/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span>{section.label}</span>
+                    {isSectionActive && <div className="w-1 h-1 rounded-full bg-blue-500/50" />}
+                  </div>
+                  <ChevronRight 
+                    size={12} 
+                    className={`transition-transform duration-200 ${expandedSections[section.id] ? 'rotate-90' : ''} opacity-0 group-hover:opacity-100`} 
+                  />
+                </div>
+                
+                <div className={`mt-1 space-y-0.5 overflow-hidden transition-all duration-300 ${expandedSections[section.id] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  {section.items.map((item, i) => {
+                    const isActive = activeSidebarItem?.path === item.path;
+                    return (
+                      <div 
+                        key={i}
+                        onClick={() => item.path && navigateTo(item.path)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => item.path && handleDrop(e, item.path)}
+                        className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-default group active:scale-[0.98] relative overflow-hidden ${
                           isActive 
-                            ? 'text-white' 
-                            : 'text-blue-400 group-hover:text-blue-300'
-                        }`} 
-                        strokeWidth={2} 
-                      />
-                      <span className="truncate">{item.label}</span>
-                    </div>
-                  );
-                })}
+                            ? 'bg-blue-500/15 text-blue-400' 
+                            : 'text-white/60 hover:bg-white/5 hover:text-white'
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.div 
+                            layoutId="active-sidebar-indicator"
+                            className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500 rounded-r-full"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <item.icon 
+                          size={16} 
+                          className={`transition-all duration-200 ${
+                            isActive 
+                              ? 'text-blue-400' 
+                              : 'text-white/30 group-hover:text-white/60'
+                          }`} 
+                          strokeWidth={isActive ? 2.5 : 2} 
+                        />
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
