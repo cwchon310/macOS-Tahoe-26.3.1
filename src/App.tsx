@@ -18,6 +18,7 @@ import { Widgets } from './components/Widgets';
 import { Siri } from './components/Siri';
 import { ControlCenter } from './components/ControlCenter';
 import { Spotlight } from './components/Spotlight';
+import { ForceQuit } from './components/ForceQuit';
 import { Apps, ALL_APPS } from './components/apps/Apps';
 import { AppStore } from './components/apps/AppStore';
 import { WeChat } from './components/apps/WeChat';
@@ -33,7 +34,8 @@ import { LoginScreen } from './components/LoginScreen';
 import { FileIcon } from './components/FileIcon';
 
 const Desktop = () => {
-  const { wallpaper, isDarkMode } = useSystem();
+  const { wallpaper, isDarkMode, toggleDock } = useSystem();
+  const { toggleNotificationCenter } = useNotifications();
   const { installedApps } = useInstalledApps();
 
   React.useEffect(() => {
@@ -48,6 +50,7 @@ const Desktop = () => {
   const [isControlCenterOpen, setIsControlCenterOpen] = React.useState(false);
   const [isSpotlightOpen, setIsSpotlightOpen] = React.useState(false);
   const [isAboutOpen, setIsAboutOpen] = React.useState(false);
+  const [isForceQuitOpen, setIsForceQuitOpen] = React.useState(false);
   const [isAboutShaded, setIsAboutShaded] = React.useState(false);
   const [aboutPos, setAboutPos] = React.useState({ x: 100, y: 100 });
   const [isMissionControlActive, setIsMissionControlActive] = React.useState(false);
@@ -178,18 +181,22 @@ const Desktop = () => {
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Siri: Cmd+Shift+S
       if (e.metaKey && e.shiftKey && e.key === 'S') {
         e.preventDefault();
         setIsSiriOpen(prev => !prev);
       }
+      // Spotlight: Cmd+Space
       if (e.metaKey && e.key === ' ') {
         e.preventDefault();
         setIsSpotlightOpen(prev => !prev);
       }
-      if (e.metaKey && e.shiftKey && e.key === 'A') {
+      // Launchpad: Cmd+Shift+A or Fn+Shift+A
+      if ((e.metaKey && e.shiftKey && e.key === 'A') || (e.key === 'A' && e.shiftKey && (e as any).fnKey)) {
         e.preventDefault();
         handleOpenApp('apps');
       }
+      // Minimize: Cmd+M (Active) or Cmd+Option+M (All)
       if (e.metaKey && e.code === 'KeyM') {
         e.preventDefault();
         if (e.altKey) {
@@ -198,9 +205,80 @@ const Desktop = () => {
           minimizeApp(activeApp);
         }
       }
+      // Close Window: Cmd+W
+      if (e.metaKey && e.code === 'KeyW') {
+        e.preventDefault();
+        if (activeApp) {
+          const activeWindow = Object.values(windows).find(w => w.id === activeApp && !w.isMinimized);
+          if (activeWindow) closeApp(activeWindow.id);
+        }
+      }
+      // Quit App: Cmd+Q
+      if (e.metaKey && e.code === 'KeyQ') {
+        e.preventDefault();
+        if (activeApp) {
+          const appWindows = Object.values(windows).filter(w => w.id === activeApp);
+          appWindows.forEach(w => closeApp(w.id));
+        }
+      }
+      // Hide App: Cmd+H (Simulated as minimize)
+      if (e.metaKey && e.code === 'KeyH') {
+        e.preventDefault();
+        if (activeApp) minimizeApp(activeApp);
+      }
+      // Mission Control: F3 or Control+Up
       if ((e.ctrlKey && e.key === 'ArrowUp') || e.key === 'F3') {
         e.preventDefault();
         setIsMissionControlActive(prev => !prev);
+      }
+      // App Expose: Control+Down
+      if (e.ctrlKey && e.key === 'ArrowDown') {
+        e.preventDefault();
+        // For now, just toggle Mission Control as a placeholder for App Expose
+        setIsMissionControlActive(prev => !prev);
+      }
+      // Control Center: Fn+C
+      if (e.key === 'c' && (e as any).fnKey) {
+        e.preventDefault();
+        setIsControlCenterOpen(prev => !prev);
+      }
+      // Notification Center: Fn+N
+      if (e.key === 'n' && (e as any).fnKey) {
+        e.preventDefault();
+        toggleNotificationCenter();
+      }
+      // Toggle Dock: Cmd+Option+D or Fn+A
+      if ((e.metaKey && e.altKey && e.key === 'd') || (e.key === 'a' && (e as any).fnKey)) {
+        e.preventDefault();
+        toggleDock();
+      }
+      // Settings: Cmd+,
+      if (e.metaKey && e.key === ',') {
+        e.preventDefault();
+        handleOpenApp('settings');
+      }
+      // New Finder Window: Cmd+N
+      if (e.metaKey && e.key === 'n') {
+        e.preventDefault();
+        handleOpenApp('finder');
+      }
+      // Move to Trash: Cmd+Delete
+      if (e.metaKey && (e.key === 'Delete' || e.key === 'Backspace')) {
+        e.preventDefault();
+        if (selectedDesktopItem) {
+          deleteDesktopItem(selectedDesktopItem);
+          setSelectedDesktopItem(null);
+        }
+      }
+      // Invert Colors: Control+Option+Cmd+8
+      if (e.ctrlKey && e.altKey && e.metaKey && e.key === '8') {
+        e.preventDefault();
+        document.body.style.filter = document.body.style.filter === 'invert(1)' ? '' : 'invert(1)';
+      }
+      // Force Quit: Cmd+Option+Esc
+      if (e.metaKey && e.altKey && e.key === 'Escape') {
+        e.preventDefault();
+        setIsForceQuitOpen(prev => !prev);
       }
     };
 
@@ -209,7 +287,7 @@ const Desktop = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [selectedDesktopItem, isSpotlightOpen, handleOpenApp, activeApp, minimizeApp, minimizeAllApps]);
+  }, [selectedDesktopItem, isSpotlightOpen, handleOpenApp, activeApp, minimizeApp, minimizeAllApps, windows, closeApp, toggleNotificationCenter, toggleDock]);
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
@@ -552,15 +630,34 @@ const Desktop = () => {
                     handleOpenApp('textedit', { content: item.content, name: item.name });
                   }
                 }},
-                { label: 'Delete', onClick: () => contextMenu.targetId && deleteDesktopItem(contextMenu.targetId), danger: true }
+                { label: 'Open With', onClick: () => {} },
+                { label: '', divider: true },
+                { label: 'Get Info', onClick: () => {} },
+                { label: 'Rename', onClick: () => {} },
+                { label: 'Duplicate', onClick: () => {} },
+                { label: 'Make Alias', onClick: () => {} },
+                { label: '', divider: true },
+                { label: 'Copy', onClick: () => {} },
+                { label: 'Share', onClick: () => {} },
+                { label: '', divider: true },
+                { label: 'Move to Trash', onClick: () => contextMenu.targetId && deleteDesktopItem(contextMenu.targetId), danger: true }
               ]}
             />
           )}
           
-          {/* Windows */}
           <AnimatePresence>
             {renderedWindows}
           </AnimatePresence>
+
+          <ForceQuit 
+            isOpen={isForceQuitOpen} 
+            onClose={() => setIsForceQuitOpen(false)} 
+            windows={windows}
+            onForceQuit={(id) => {
+              closeApp(id);
+              setIsForceQuitOpen(false);
+            }}
+          />
 
           {/* Launchpad (Apps) Overlay */}
           <AnimatePresence>

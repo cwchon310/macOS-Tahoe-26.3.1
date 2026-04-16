@@ -78,15 +78,32 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
     { id: 'shortcut-email', name: 'Send Email to Adriana', icon: 'https://img.icons8.com/fluency/96/mail.png', category: 'social' },
   ];
 
-  const filteredItems = [
-    ...installedApps.map(app => ({ ...app, type: 'app' })),
-    ...systemActions.map(action => ({ ...action, type: 'system' })),
-    ...smartActions.map(action => ({ ...action, type: 'action' }))
-  ].filter(item => {
-    const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase());
-    const matchesMode = mode === 'global' || item.category === mode;
-    return matchesQuery && matchesMode;
-  });
+  const filteredItems = React.useMemo(() => {
+    const items = [
+      ...installedApps.map(app => ({ ...app, type: 'app' })),
+      ...systemActions.map(action => ({ ...action, type: 'system' })),
+      ...smartActions.map(action => ({ ...action, type: 'action' }))
+    ];
+
+    if (!query) return items.filter(item => mode === 'global' || item.category === mode);
+
+    const q = query.toLowerCase();
+    return items
+      .map(item => {
+        const name = item.name.toLowerCase();
+        let score = 0;
+        if (name === q) score = 100;
+        else if (name.startsWith(q)) score = 80;
+        else if (name.includes(q)) score = 40;
+        
+        // Boost apps
+        if (item.type === 'app') score += 10;
+        
+        return { ...item, score };
+      })
+      .filter(item => item.score > 0 && (mode === 'global' || item.category === mode))
+      .sort((a, b) => b.score - a.score);
+  }, [query, mode, installedApps]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') onClose();

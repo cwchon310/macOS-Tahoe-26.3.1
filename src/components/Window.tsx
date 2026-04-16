@@ -131,12 +131,15 @@ export const Window: React.FC<WindowProps> = memo(({
         x: 0, 
         y: 0, 
         filter: 'blur(0px)',
-        borderRadius: windowState.isMaximized ? '0px' : '12px',
+        borderRadius: windowState.isMaximized ? '0px' : (windowState.isShaded ? '12px' : '12px'),
         clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
         width: windowState.isMaximized ? window.innerWidth : windowState.width,
         height: windowState.isShaded ? 52 : (windowState.isMaximized ? window.innerHeight - 112 : windowState.height),
         left: windowState.isMaximized ? 0 : windowState.x,
         top: windowState.isMaximized ? 28 : windowState.y,
+        boxShadow: windowState.isShaded 
+          ? '0 10px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1)' 
+          : '0 30px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.15)',
       };
 
   const transitionSettings = {
@@ -208,7 +211,7 @@ export const Window: React.FC<WindowProps> = memo(({
           if (!isMissionControl) dragControls.start(e);
         }}
       >
-        <div className="flex gap-2 group relative z-50">
+        <div className="flex gap-2 group relative z-50" onDoubleClick={(e) => e.stopPropagation()}>
           <motion.button 
             whileHover={isActive ? { scale: 1.1 } : {}}
             whileTap={isActive ? { scale: 0.9 } : {}}
@@ -300,14 +303,14 @@ export const Window: React.FC<WindowProps> = memo(({
       {/* Resize Handles */}
       {!windowState.isMaximized && !windowState.isShaded && !isMissionControl && (
         <>
-          <div className="absolute top-0 left-0 w-2 h-2 cursor-nwse-resize z-50" onPointerDown={(e) => handleResize(e, 'top-left')} />
-          <div className="absolute top-0 left-2 right-2 h-2 cursor-ns-resize z-50" onPointerDown={(e) => handleResize(e, 'top')} />
-          <div className="absolute top-0 right-0 w-2 h-2 cursor-nesw-resize z-50" onPointerDown={(e) => handleResize(e, 'top-right')} />
-          <div className="absolute top-2 bottom-2 left-0 w-2 cursor-ew-resize z-50" onPointerDown={(e) => handleResize(e, 'left')} />
-          <div className="absolute top-2 bottom-2 right-0 w-2 cursor-ew-resize z-50" onPointerDown={(e) => handleResize(e, 'right')} />
-          <div className="absolute bottom-0 left-0 w-2 h-2 cursor-nesw-resize z-50" onPointerDown={(e) => handleResize(e, 'bottom-left')} />
-          <div className="absolute bottom-0 left-2 right-2 h-2 cursor-ns-resize z-50" onPointerDown={(e) => handleResize(e, 'bottom')} />
-          <div className="absolute bottom-0 right-0 w-2 h-2 cursor-nwse-resize z-50" onPointerDown={(e) => handleResize(e, 'bottom-right')} />
+          <div className="absolute top-0 left-0 w-3 h-3 cursor-nwse-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'top-left')} />
+          <div className="absolute top-0 left-3 right-3 h-1 cursor-ns-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'top')} />
+          <div className="absolute top-0 right-0 w-3 h-3 cursor-nesw-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'top-right')} />
+          <div className="absolute top-3 bottom-3 left-0 w-1 cursor-ew-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'left')} />
+          <div className="absolute top-3 bottom-3 right-0 w-1 cursor-ew-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'right')} />
+          <div className="absolute bottom-0 left-0 w-3 h-3 cursor-nesw-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'bottom-left')} />
+          <div className="absolute bottom-0 left-3 right-3 h-1 cursor-ns-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'bottom')} />
+          <div className="absolute bottom-0 right-0 w-3 h-3 cursor-nwse-resize z-50 hover:bg-blue-500/10 transition-colors" onPointerDown={(e) => handleResize(e, 'bottom-right')} />
         </>
       )}
     </motion.div>

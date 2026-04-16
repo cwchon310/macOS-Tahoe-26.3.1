@@ -30,6 +30,8 @@ interface SystemState {
   setMinimizeEffect: (effect: 'genie' | 'scale') => void;
   magnificationFactor: number;
   setMagnificationFactor: (factor: number) => void;
+  isDockVisible: boolean;
+  toggleDock: () => void;
 }
 
 const SystemContext = createContext<SystemState | undefined>(undefined);
@@ -69,6 +71,7 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const saved = localStorage.getItem('magnificationFactor');
     return saved ? parseFloat(saved) : 1.5; // Default to 1.5x magnification
   });
+  const [isDockVisible, setIsDockVisible] = useState(true);
 
   useEffect(() => {
     localStorage.setItem('wallpaperConfig', JSON.stringify(wallpaperConfig));
@@ -94,6 +97,7 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
   const toggleWifi = () => setIsWifiOn(prev => !prev);
   const toggleBluetooth = () => setIsBluetoothOn(prev => !prev);
+  const toggleDock = () => setIsDockVisible(prev => !prev);
 
   let currentWallpaper = '';
   if (wallpaperConfig.type === 'dynamic') {
@@ -133,7 +137,9 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       minimizeEffect,
       setMinimizeEffect,
       magnificationFactor,
-      setMagnificationFactor
+      setMagnificationFactor,
+      isDockVisible,
+      toggleDock
     }}>
       {children}
     </SystemContext.Provider>

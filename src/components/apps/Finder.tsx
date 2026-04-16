@@ -115,8 +115,39 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
     return saved ? JSON.parse(saved) : { favorites: true, icloud: true };
   });
   const [hoveredFile, setHoveredFile] = useState<any>(null);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; isOpen: boolean; file: any } | null>(null);
   const [infoModal, setInfoModal] = useState<any>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle if Finder is active (we can assume it's active if this component is mounted and focused)
+      // In a real app we'd check if this specific window is focused
+      if (e.metaKey && e.key === 'i') {
+        e.preventDefault();
+        if (selectedFile) setInfoModal(selectedFile);
+      }
+      if (e.metaKey && e.key === 'f') {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[placeholder="Search"]') as HTMLInputElement;
+        if (searchInput) searchInput.focus();
+      }
+      if (e.metaKey && (e.key === 'Delete' || e.key === 'Backspace')) {
+        e.preventDefault();
+        if (selectedFile) {
+          console.log(`Moving ${selectedFile.name} to Trash`);
+          setSelectedFile(null);
+        }
+      }
+      if (e.key === 'Enter' && selectedFile) {
+        e.preventDefault();
+        handleFileOpen(selectedFile);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedFile]);
 
   useEffect(() => {
     localStorage.setItem('finder_expanded_sections', JSON.stringify(expandedSections));
@@ -191,9 +222,23 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
     navigateTo(newPath);
   };
 
-  const files = (getFilesForPath() as Array<{ name: string; type: string; icon?: string; path?: string }>).filter(file => 
-    file.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const files = React.useMemo(() => {
+    const allFiles = getFilesForPath() as Array<{ name: string; type: string; icon?: string; path?: string }>;
+    if (!searchQuery) return allFiles;
+
+    const q = searchQuery.toLowerCase();
+    return allFiles
+      .map(file => {
+        const name = file.name.toLowerCase();
+        let score = 0;
+        if (name === q) score = 100;
+        else if (name.startsWith(q)) score = 80;
+        else if (name.includes(q)) score = 40;
+        return { ...file, score };
+      })
+      .filter(file => file.score > 0)
+      .sort((a, b) => b.score - a.score);
+  }, [searchQuery, currentPath, installedApps]);
 
   const activeSidebarItem = SIDEBAR_SECTIONS.flatMap(s => s.items).reverse().find(item => 
     item.path && currentPath && (currentPath === item.path || currentPath.startsWith(item.path + '/'))
@@ -368,7 +413,7 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
           </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden" onClick={() => setSelectedFile(null)}>
           {/* Grid */}
           <div className="flex-1 p-6 grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-x-4 gap-y-8 overflow-y-auto content-start custom-scrollbar">
             {files.map((file, i) => (
@@ -378,7 +423,11 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
                 onDragStart={(e) => handleDragStart(e, file)}
                 onDragOver={(e) => file.type === 'folder' ? e.preventDefault() : null}
                 onDrop={(e) => file.type === 'folder' && file.path ? handleDrop(e, file.path) : null}
-                className="flex flex-col items-center gap-1 group cursor-default"
+                className={`flex flex-col items-center gap-1 group cursor-default p-1 rounded-lg transition-colors ${selectedFile?.name === file.name ? 'bg-blue-600/30' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedFile(file);
+                }}
                 onDoubleClick={() => handleFileOpen(file)}
                 onMouseEnter={() => setHoveredFile(file)}
                 onMouseLeave={() => setHoveredFile(null)}
@@ -453,9 +502,19 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
           onClose={() => setContextMenu(null)}
           items={[
             { label: 'Open', onClick: () => handleFileOpen(contextMenu.file) },
-            { label: 'Get Info', onClick: () => setInfoModal(contextMenu.file) },
+            { label: 'Open With', onClick: () => {} },
             { label: '', divider: true },
-            { label: 'Move to Trash', onClick: () => {}, danger: true },
+            { label: 'Get Info', onClick: () => setInfoModal(contextMenu.file) },
+            { label: 'Rename', onClick: () => {} },
+            { label: 'Duplicate', onClick: () => {} },
+            { label: 'Make Alias', onClick: () => {} },
+            { label: '', divider: true },
+            { label: 'Copy', onClick: () => {} },
+            { label: 'Share', onClick: () => {} },
+            { label: '', divider: true },
+            { label: 'Move to Trash', onClick: () => {
+              console.log(`Moving ${contextMenu.file.name} to Trash`);
+            }, danger: true },
           ]}
         />
       )}

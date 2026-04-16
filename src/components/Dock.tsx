@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'motion/react';
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'motion/react';
 import { AppID, WindowState } from '../types';
 import { useDockPosition } from '../context/DockPositionContext';
 import { useInstalledApps } from '../context/InstalledAppsContext';
@@ -171,7 +171,7 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
 export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, windows, renderAppContent }) => {
   const mouseX = useMotionValue(Infinity);
   const { installedApps } = useInstalledApps();
-  const { isDarkMode } = useSystem();
+  const { isDarkMode, isDockVisible } = useSystem();
 
   // Filter for pinned apps (just taking the first 15 for now as "pinned")
   // In a real app, we'd have a separate "pinnedApps" state
@@ -197,48 +197,58 @@ export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, wind
   }, [installedApps]);
 
   return (
-    <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[10000]">
-      <motion.div 
-        className={`px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[100px] relative overflow-visible h-[76px] ${isDarkMode ? 'liquid-glass-dark' : 'liquid-glass'}`}
-        onMouseMove={(e) => mouseX.set(e.pageX)}
-        onMouseLeave={() => mouseX.set(Infinity)}
-      >
-        <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
-        {dockApps.map((app) => (
-          <DockItem 
-            key={app.id} 
-            app={app} 
-            isOpen={openApps.includes(app.id as AppID)} 
-            isActive={activeApp === app.id} 
-            onOpenApp={onOpenApp} 
-            mouseX={mouseX} 
-            previewContent={renderAppContent(app.id as AppID)}
-          />
-        ))}
-        
-        {/* Separator */}
-        <div className={`w-[1px] h-10 mx-1 rounded-full mb-1.5 ${isDarkMode ? 'bg-white/20' : 'bg-black/10'}`} />
-        
-        {/* Downloads */}
-        <DockItem 
-          app={{ id: 'downloads', icon: 'https://img.icons8.com/fluency/96/mac-folder.png', name: 'Downloads' }} 
-          isOpen={openApps.includes('downloads' as AppID)} 
-          isActive={activeApp === 'downloads'} 
-          onOpenApp={onOpenApp} 
-          mouseX={mouseX} 
-          previewContent={null}
-        />
+    <AnimatePresence>
+      {isDockVisible && (
+        <motion.div 
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+          className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[10000]"
+        >
+          <motion.div 
+            className={`px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[100px] relative overflow-visible h-[76px] ${isDarkMode ? 'liquid-glass-dark' : 'liquid-glass'}`}
+            onMouseMove={(e) => mouseX.set(e.pageX)}
+            onMouseLeave={() => mouseX.set(Infinity)}
+          >
+            <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+            {dockApps.map((app) => (
+              <DockItem 
+                key={app.id} 
+                app={app} 
+                isOpen={openApps.includes(app.id as AppID)} 
+                isActive={activeApp === app.id} 
+                onOpenApp={onOpenApp} 
+                mouseX={mouseX} 
+                previewContent={renderAppContent(app.id as AppID)}
+              />
+            ))}
+            
+            {/* Separator */}
+            <div className={`w-[1px] h-10 mx-1 rounded-full mb-1.5 ${isDarkMode ? 'bg-white/20' : 'bg-black/10'}`} />
+            
+            {/* Downloads */}
+            <DockItem 
+              app={{ id: 'downloads', icon: 'https://img.icons8.com/fluency/96/mac-folder.png', name: 'Downloads' }} 
+              isOpen={openApps.includes('downloads' as AppID)} 
+              isActive={activeApp === 'downloads'} 
+              onOpenApp={onOpenApp} 
+              mouseX={mouseX} 
+              previewContent={null}
+            />
 
-        {/* Trash */}
-        <DockItem 
-          app={{ id: 'trash', icon: 'https://img.icons8.com/fluency/96/trash.png', name: 'Trash' }} 
-          isOpen={openApps.includes('trash' as AppID)} 
-          isActive={activeApp === 'trash'} 
-          onOpenApp={onOpenApp} 
-          mouseX={mouseX} 
-          previewContent={null}
-        />
-      </motion.div>
-    </div>
+            {/* Trash */}
+            <DockItem 
+              app={{ id: 'trash', icon: 'https://img.icons8.com/fluency/96/trash.png', name: 'Trash' }} 
+              isOpen={openApps.includes('trash' as AppID)} 
+              isActive={activeApp === 'trash'} 
+              onOpenApp={onOpenApp} 
+              mouseX={mouseX} 
+              previewContent={null}
+            />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };

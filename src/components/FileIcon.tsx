@@ -1,5 +1,6 @@
 import React from 'react';
-import { FileText, FileImage, FileCode, FileSpreadsheet, FileArchive, Disc, Video, Music, File } from 'lucide-react';
+import { FileText, FileImage, FileCode, FileSpreadsheet, FileArchive, Disc, Video, Music, File, Database, Terminal, Settings, Globe, Lock, Mail, Phone, Camera, Map, Calendar, Heart, Star } from 'lucide-react';
+import { motion } from 'motion/react';
 
 export const FileIcon = ({ name, className = "" }: { name: string, className?: string }) => {
   const ext = name.split('.').pop()?.toLowerCase();
@@ -18,29 +19,37 @@ export const FileIcon = ({ name, className = "" }: { name: string, className?: s
     case 'jpg':
     case 'jpeg':
     case 'png': 
+    case 'gif':
+    case 'webp':
+    case 'heic':
       Icon = FileImage; 
       color = "text-blue-500"; 
       bgGradient = "from-blue-50 to-blue-100";
       break;
     case 'xlsx':
     case 'xls': 
+    case 'csv':
       Icon = FileSpreadsheet; 
       color = "text-green-600"; 
       bgGradient = "from-green-50 to-green-100";
       break;
     case 'pptx':
     case 'ppt': 
+    case 'key':
       Icon = FileText; 
       color = "text-orange-500"; 
       bgGradient = "from-orange-50 to-orange-100";
       break;
     case 'docx':
     case 'doc': 
+    case 'pages':
       Icon = FileText; 
       color = "text-blue-600"; 
       bgGradient = "from-blue-50 to-blue-100";
       break;
     case 'txt': 
+    case 'md':
+    case 'rtf':
       Icon = FileText; 
       color = "text-gray-600"; 
       bgGradient = "from-gray-50 to-gray-200";
@@ -49,13 +58,20 @@ export const FileIcon = ({ name, className = "" }: { name: string, className?: s
     case 'js':
     case 'ts':
     case 'tsx':
+    case 'jsx':
     case 'json': 
+    case 'py':
+    case 'rb':
+    case 'cpp':
+    case 'h':
+    case 'swift':
       Icon = FileCode; 
       color = "text-emerald-600"; 
       bgGradient = "from-emerald-50 to-emerald-100";
       break;
     case 'iso':
     case 'dmg': 
+    case 'pkg':
       Icon = Disc; 
       color = "text-slate-600"; 
       bgGradient = "from-slate-100 to-slate-200";
@@ -64,6 +80,7 @@ export const FileIcon = ({ name, className = "" }: { name: string, className?: s
     case 'rar':
     case 'tar':
     case 'gz': 
+    case '7z':
       Icon = FileArchive; 
       color = "text-yellow-600"; 
       bgGradient = "from-yellow-50 to-yellow-100";
@@ -71,20 +88,48 @@ export const FileIcon = ({ name, className = "" }: { name: string, className?: s
     case 'mov':
     case 'mp4':
     case 'mkv': 
+    case 'avi':
       Icon = Video; 
       color = "text-indigo-500"; 
       bgGradient = "from-indigo-50 to-indigo-100";
       break;
     case 'mp3':
     case 'wav': 
+    case 'flac':
+    case 'm4a':
       Icon = Music; 
       color = "text-pink-500"; 
       bgGradient = "from-pink-50 to-pink-100";
       break;
+    case 'db':
+    case 'sql':
+    case 'sqlite':
+      Icon = Database;
+      color = "text-purple-600";
+      bgGradient = "from-purple-50 to-purple-100";
+      break;
+    case 'plist':
+    case 'xml':
+    case 'yaml':
+    case 'yml':
+      Icon = Settings;
+      color = "text-gray-700";
+      bgGradient = "from-gray-100 to-gray-200";
+      break;
+    case 'html':
+    case 'htm':
+      Icon = Globe;
+      color = "text-orange-600";
+      bgGradient = "from-orange-50 to-orange-100";
+      break;
   }
 
   return (
-    <div className={`w-14 h-16 bg-gradient-to-br ${bgGradient} relative rounded-[4px] shadow-sm flex flex-col items-center justify-center overflow-hidden group-hover:scale-105 transition-transform border border-black/10 ${className}`}>
+    <motion.div 
+      whileHover={{ scale: 1.05, rotate: 1 }}
+      whileTap={{ scale: 0.95 }}
+      className={`w-14 h-16 bg-gradient-to-br ${bgGradient} relative rounded-[4px] shadow-sm flex flex-col items-center justify-center overflow-hidden border border-black/10 ${className}`}
+    >
        {/* Folded corner effect */}
        <div className="absolute top-0 right-0 w-4 h-4 bg-gradient-to-bl from-white/50 to-black/5 rounded-bl-[4px] shadow-[-1px_1px_2px_rgba(0,0,0,0.1)] z-10" />
        
@@ -96,6 +141,6 @@ export const FileIcon = ({ name, className = "" }: { name: string, className?: s
            {label}
          </span>
        </div>
-    </div>
+    </motion.div>
   );
 };
