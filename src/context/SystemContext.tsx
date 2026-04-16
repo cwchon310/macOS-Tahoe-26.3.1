@@ -36,7 +36,7 @@ const SystemContext = createContext<SystemState | undefined>(undefined);
 
 const DEFAULT_WALLPAPER: WallpaperConfig = {
   type: 'static',
-  url: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=2560&q=80', // Surfer at sunset
+  url: 'https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=2560&q=80', // Light abstract gradient
 };
 
 export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -57,7 +57,7 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return DEFAULT_WALLPAPER;
   });
 
-  const [isDarkMode, setIsDarkMode] = useState(true); // Default to dark for this theme
+  const [isDarkMode, setIsDarkMode] = useState(false); // Default to light for Tahoe aesthetic
   const [brightness, setBrightness] = useState(100);
   const [volume, setVolume] = useState(75);
   const [isWifiOn, setIsWifiOn] = useState(true);

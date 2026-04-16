@@ -88,11 +88,9 @@ export const Window: React.FC<WindowProps> = memo(({
   const dockAnimation = targetPos ? {
     x: targetPos.x - windowState.x + (targetPos.width / 2) - (windowState.width / 2),
     y: targetPos.y - windowState.y + (targetPos.height / 2) - (windowState.height / 2),
-    scale: minimizeEffect === 'genie' ? 1 : 0.1,
-    scaleX: minimizeEffect === 'genie' ? 0.05 : undefined,
-    scaleY: minimizeEffect === 'genie' ? 0.01 : undefined,
+    scale: 0.15,
     opacity: 0,
-    filter: 'blur(10px)'
+    filter: 'blur(8px)'
   } : { 
     y: 100, 
     scale: 0.8, 
@@ -102,7 +100,7 @@ export const Window: React.FC<WindowProps> = memo(({
 
   const animation = windowState.isMinimized && targetPos
     ? { 
-        scale: minimizeEffect === 'genie' ? 1 : 0.1,
+        scale: minimizeEffect === 'genie' ? 0.1 : 0.1,
         scaleX: minimizeEffect === 'genie' ? 0.05 : undefined,
         scaleY: minimizeEffect === 'genie' ? 0.01 : undefined,
         opacity: 0, 
@@ -110,6 +108,9 @@ export const Window: React.FC<WindowProps> = memo(({
         y: targetPos.y - (windowState.isMaximized ? 28 : windowState.y) + (targetPos.height / 2) - (windowState.isMaximized ? (window.innerHeight - 112) / 2 : windowState.height / 2),
         filter: 'blur(10px)',
         borderRadius: '40px',
+        clipPath: minimizeEffect === 'genie' 
+          ? 'polygon(20% 0%, 80% 0%, 55% 100%, 45% 100%)' 
+          : 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)'
       }
     : isMissionControl && missionControlTransform
     ? {
@@ -131,6 +132,7 @@ export const Window: React.FC<WindowProps> = memo(({
         y: 0, 
         filter: 'blur(0px)',
         borderRadius: windowState.isMaximized ? '0px' : '12px',
+        clipPath: 'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
         width: windowState.isMaximized ? window.innerWidth : windowState.width,
         height: windowState.isShaded ? 52 : (windowState.isMaximized ? window.innerHeight - 112 : windowState.height),
         left: windowState.isMaximized ? 0 : windowState.x,
@@ -139,20 +141,25 @@ export const Window: React.FC<WindowProps> = memo(({
 
   const transitionSettings = {
     type: 'spring',
-    stiffness: 350,
-    damping: 35,
+    stiffness: 285.71, // macOS Native Spring Stiffness
+    damping: 25, // Adjusted for browser feel
     mass: 1,
     ...(minimizeEffect === 'genie' && windowState.isMinimized ? {
       type: 'tween',
       ease: [0.4, 0, 0.2, 1],
-      duration: 0.55,
-      scaleX: { ease: [0.7, 0, 0.3, 1], duration: 0.55 },
-      scaleY: { ease: [0.1, 0, 0.9, 1], duration: 0.55 },
-      opacity: { duration: 0.3, delay: 0.25 },
-      x: { ease: [0.4, 0, 0.2, 1], duration: 0.55 },
-      y: { ease: [0.3, 0, 0.1, 1], duration: 0.55 }, // Different ease for Y to create a slight curve
+      duration: 0.65,
+      scaleX: { ease: [0.7, 0, 0.3, 1], duration: 0.65 },
+      scaleY: { ease: [0.1, 0, 0.9, 1], duration: 0.65 },
+      opacity: { duration: 0.4, delay: 0.25 },
+      x: { ease: [0.4, 0, 0.2, 1], duration: 0.65 },
+      y: { ease: [0.3, 0, 0.1, 1], duration: 0.65 },
+      clipPath: { ease: [0.4, 0, 0.2, 1], duration: 0.65 },
     } : {})
   };
+
+  const transformOrigin = targetPos 
+    ? `${targetPos.x - (windowState.isMaximized ? 0 : windowState.x) + targetPos.width / 2}px ${targetPos.y - (windowState.isMaximized ? 28 : windowState.y) + targetPos.height / 2}px`
+    : 'center';
 
   return (
     <motion.div
@@ -182,6 +189,7 @@ export const Window: React.FC<WindowProps> = memo(({
         zIndex: isMissionControl ? 10000 + windowState.zIndex : windowState.zIndex,
         backgroundColor: 'rgba(28, 28, 30, 0.65)',
         willChange: 'transform, opacity, width, height, left, top, filter',
+        transformOrigin,
       }}
       onPointerDown={(e) => {
         if (isMissionControl) {
@@ -254,6 +262,26 @@ export const Window: React.FC<WindowProps> = memo(({
       >
         {children}
       </div>
+
+      {/* Mission Control Close Button */}
+      <AnimatePresence>
+        {isMissionControl && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }}
+            className="absolute -top-3 -left-3 w-7 h-7 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white/60 hover:text-white hover:bg-white/30 transition-all z-[60] border border-white/10 shadow-lg"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Mission Control Title */}
       <AnimatePresence>

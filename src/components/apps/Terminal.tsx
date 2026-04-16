@@ -308,11 +308,14 @@ export const Terminal: React.FC = () => {
 
   return (
     <div 
-      className="h-full bg-[#1e1e1e]/95 text-white font-mono pt-12 p-4 overflow-auto text-[13px] leading-relaxed selection:bg-white/30 backdrop-blur-md rounded-b-xl"
+      className="h-full bg-[#1e1e1e]/90 text-white font-mono pt-12 p-6 overflow-auto text-[13px] leading-relaxed selection:bg-blue-500/50 backdrop-blur-3xl rounded-b-xl"
       ref={scrollRef}
       onClick={() => inputRef.current?.focus()}
     >
       <div className="max-w-full">
+        <div className="mb-4 text-white/40 text-[11px]">
+          Last login: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()} on ttys001
+        </div>
         {history.map((line, i) => (
           <div key={i} className="mb-0.5 whitespace-pre-wrap break-all">
             {typeof line === 'string' && line.startsWith('guest@macbook') ? (

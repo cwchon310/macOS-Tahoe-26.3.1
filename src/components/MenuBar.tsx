@@ -49,7 +49,7 @@ const MenuBarComponent: React.FC<MenuBarProps> = ({
   onShutDown,
   onLogOut
 }) => {
-  const { currentTime } = useSystem();
+  const { currentTime, isDarkMode } = useSystem();
   const { toggleNotificationCenter, isNotificationCenterOpen } = useNotifications();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [user, setUser] = useState<{ name: string } | null>(null);
@@ -86,14 +86,14 @@ const MenuBarComponent: React.FC<MenuBarProps> = ({
   const currentMenus = MENUS[activeApp] || MENUS.default;
 
   return (
-    <div className="h-7 w-full liquid-glass flex items-center justify-between px-4 text-[13px] font-medium text-white select-none z-[9999] border-b border-white/5 shadow-sm relative">
+    <div className={`h-7 w-full liquid-glass flex items-center justify-between px-4 text-[13px] font-medium select-none z-[9999] border-b border-white/5 shadow-sm relative ${isDarkMode ? 'text-white' : 'text-black/80'}`}>
       <div className="flex items-center gap-2">
         <div className="relative">
           <div 
             className={`px-2 py-0.5 rounded-md transition-all cursor-default flex items-center justify-center ${showAppleMenu ? 'bg-white/15 shadow-inner' : 'hover:bg-white/10'}`}
             onClick={() => setShowAppleMenu(!showAppleMenu)}
           >
-            <Apple size={15} fill="currentColor" className="text-white" />
+            <Apple size={15} fill="currentColor" className={isDarkMode ? 'text-white' : 'text-black'} />
           </div>
           {showAppleMenu && (
             <div className="absolute top-8 left-0 w-64 liquid-glass-dark rounded-xl p-1.5 text-[13px] text-white/90 shadow-2xl z-[10000] border border-white/10">
@@ -129,17 +129,17 @@ const MenuBarComponent: React.FC<MenuBarProps> = ({
 
       <div className="flex items-center gap-1">
         {/* Live Activity Mock */}
-        <div className="hidden lg:flex items-center bg-white/10 border border-white/10 rounded-full px-3 py-0.5 mr-2 gap-2 hover:bg-white/15 transition-all cursor-pointer group">
+        <div className={`hidden lg:flex items-center border rounded-full px-3 py-0.5 mr-2 gap-2 transition-all cursor-pointer group ${isDarkMode ? 'bg-white/10 border-white/10' : 'bg-black/5 border-black/10'}`}>
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-          <span className="text-[11px] font-bold text-white/80 group-hover:text-white transition-colors">Uber Eats • 12 min</span>
+          <span className={`text-[11px] font-bold group-hover:text-current transition-colors ${isDarkMode ? 'text-white/80' : 'text-black/70'}`}>Uber Eats • 12 min</span>
         </div>
 
         <div className="flex items-center gap-0.5 opacity-90">
           <div className="px-2 py-0.5 hover:bg-white/10 rounded-md transition-colors cursor-default flex items-center justify-center">
-            <Wifi size={14} className={`transition-opacity ${isOnline ? 'text-white' : 'text-white/30'}`} />
+            <Wifi size={14} className={`transition-opacity ${isOnline ? (isDarkMode ? 'text-white' : 'text-black') : (isDarkMode ? 'text-white/30' : 'text-black/30')}`} />
           </div>
           <div className="px-2 py-0.5 hover:bg-white/10 rounded-md transition-colors cursor-default flex items-center justify-center">
-            <Search size={14} />
+            <Search size={14} className={isDarkMode ? 'text-white' : 'text-black'} />
           </div>
           <div 
             className={`px-2 py-0.5 rounded-md transition-all cursor-default flex items-center justify-center ${isSiriOpen ? 'bg-white/20 shadow-inner' : 'hover:bg-white/10'}`}
@@ -155,21 +155,21 @@ const MenuBarComponent: React.FC<MenuBarProps> = ({
             onClick={onToggleControlCenter}
           >
              <div className="w-4 h-4 relative">
-               <div className="absolute top-0.5 left-0 w-4 h-1.5 border border-white/80 rounded-full">
-                 <div className="absolute top-0 left-0.5 w-1.5 h-1.5 bg-white rounded-full" />
+               <div className="absolute top-0.5 left-0 w-4 h-1.5 border border-current rounded-full">
+                 <div className="absolute top-0 left-0.5 w-1.5 h-1.5 bg-current rounded-full" />
                </div>
-               <div className="absolute bottom-0.5 left-0 w-4 h-1.5 border border-white/80 rounded-full">
-                 <div className="absolute top-0 right-0.5 w-1.5 h-1.5 bg-white rounded-full" />
+               <div className="absolute bottom-0.5 left-0 w-4 h-1.5 border border-current rounded-full">
+                 <div className="absolute top-0 right-0.5 w-1.5 h-1.5 bg-current rounded-full" />
                </div>
              </div>
           </div>
         </div>
         <div 
-          className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all cursor-default ${isNotificationCenterOpen ? 'bg-white/20 shadow-inner' : 'hover:bg-white/10'}`}
+          className={`flex items-center gap-1 px-2 py-0.5 rounded-md transition-all cursor-default ${isNotificationCenterOpen ? (isDarkMode ? 'bg-white/20 shadow-inner' : 'bg-black/10 shadow-inner') : 'hover:bg-white/10'}`}
           onClick={toggleNotificationCenter}
         >
-          <span className="tabular-nums text-[12px]">{formatDate(currentTime)}</span>
-          <span className="tabular-nums text-[12px]">{formatTime(currentTime)}</span>
+          <span className={`tabular-nums text-[12px] ${isDarkMode ? 'text-white/90' : 'text-black/80'}`}>{formatDate(currentTime)}</span>
+          <span className={`tabular-nums text-[12px] ${isDarkMode ? 'text-white/90' : 'text-black/80'}`}>{formatTime(currentTime)}</span>
         </div>
       </div>
     </div>

@@ -25,7 +25,17 @@ interface DockItemProps {
 const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, mouseX, previewContent }) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [isBouncing, setIsBouncing] = useState(false);
   const { setDockPosition } = useDockPosition();
+
+  // Trigger bounce when app opens
+  useEffect(() => {
+    if (isOpen) {
+      setIsBouncing(true);
+      const timer = setTimeout(() => setIsBouncing(false), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   // Update position on mount and resize
   useEffect(() => {
@@ -41,7 +51,7 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
     return () => window.removeEventListener('resize', updatePosition);
   }, [app.id, setDockPosition]);
 
-  const { currentTime, minimizeEffect, magnificationFactor } = useSystem();
+  const { currentTime, minimizeEffect, magnificationFactor, isDarkMode } = useSystem();
 
   const distance = useTransform(mouseX, (val: number) => {
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
@@ -54,8 +64,8 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
   const widthSync = useTransform(distance, [-150, 0, 150], [48, targetWidth, 48]);
   const width = useSpring(widthSync, { 
     mass: 0.1, 
-    stiffness: 150, 
-    damping: 12,
+    stiffness: 200, 
+    damping: 20,
     restDelta: 0.001
   });
 
@@ -69,7 +79,7 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
       onClick={() => onOpenApp(app.id)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative group cursor-pointer flex flex-col items-center justify-end origin-bottom"
+      className={`relative group cursor-pointer flex flex-col items-center justify-end origin-bottom ${isBouncing ? 'animate-dock-bounce' : ''}`}
       draggable
       onDragStart={(e: React.DragEvent) => {
         e.dataTransfer.setData('app', JSON.stringify(app));
@@ -127,7 +137,7 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
           />
         )}
         {/* Reflection */}
-        <div className="absolute -bottom-[60%] left-0 w-full h-full opacity-10 pointer-events-none scale-y-[-0.6] blur-[2px] overflow-hidden">
+        <div className={`absolute -bottom-[60%] left-0 w-full h-full pointer-events-none scale-y-[-0.6] blur-[2px] overflow-hidden ${isDarkMode ? 'opacity-10' : 'opacity-20'}`}>
           {isCalendar ? (
              <div className="w-full h-full bg-white rounded-[10px] flex flex-col items-center justify-center">
                 <div className="absolute top-0 left-0 w-full h-1/4 bg-red-500" />
@@ -145,14 +155,14 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
       </div>
       
       {/* Tooltip */}
-      <div className="absolute -top-16 left-1/2 -translate-x-1/2 bg-[#1e1e1e]/90 backdrop-blur-xl border border-white/10 px-3 py-1.5 rounded-md text-[13px] font-medium text-white/90 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50">
+      <div className={`absolute -top-16 left-1/2 -translate-x-1/2 backdrop-blur-xl border px-3 py-1.5 rounded-md text-[13px] font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl z-50 ${isDarkMode ? 'bg-[#1e1e1e]/90 border-white/10 text-white/90' : 'bg-white/80 border-black/10 text-black/90'}`}>
         {app.name}
-        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#1e1e1e]/90 border-r border-b border-white/10 rotate-45" />
+        <div className={`absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 border-r border-b rotate-45 ${isDarkMode ? 'bg-[#1e1e1e]/90 border-white/10' : 'bg-white/80 border-black/10'}`} />
       </div>
 
       {/* Status Indicator */}
       {isOpen && (
-        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white/80 shadow-[0_0_4px_rgba(255,255,255,0.8)]" />
+        <div className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full shadow-[0_0_4px_rgba(255,255,255,0.8)] ${isDarkMode ? 'bg-white/80' : 'bg-black/60'}`} />
       )}
     </motion.div>
   );
@@ -161,6 +171,7 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
 export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, windows, renderAppContent }) => {
   const mouseX = useMotionValue(Infinity);
   const { installedApps } = useInstalledApps();
+  const { isDarkMode } = useSystem();
 
   // Filter for pinned apps (just taking the first 15 for now as "pinned")
   // In a real app, we'd have a separate "pinnedApps" state
@@ -173,15 +184,12 @@ export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, wind
     
     // We want to show specific apps in the dock to match the image
     const pinnedAppIds = [
-      'safari', 'phone', 'messages', 'mail', 'maps', 'photos', 'facetime', 
+      'safari', 'messages', 'mail', 'maps', 'photos', 'facetime', 
       'calendar', 'contacts', 'reminders', 'notes', 'freeform', 'tv', 
-      'music', 'podcasts', 'appstore', 'settings'
+      'music', 'podcasts', 'appstore', 'settings', 'terminal'
     ];
     
     const otherApps = pinnedAppIds.map(id => {
-      if (id === 'phone') {
-        return { id: 'phone', icon: 'https://img.icons8.com/fluency/96/phone.png', name: 'Phone' };
-      }
       return installedApps.find(app => app.id === id);
     }).filter(Boolean) as any[];
     
@@ -191,7 +199,7 @@ export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, wind
   return (
     <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[10000]">
       <motion.div 
-        className="px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[100px] relative overflow-visible h-[76px] liquid-glass-dark"
+        className={`px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[100px] relative overflow-visible h-[76px] ${isDarkMode ? 'liquid-glass-dark' : 'liquid-glass'}`}
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
       >
@@ -209,7 +217,7 @@ export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, wind
         ))}
         
         {/* Separator */}
-        <div className="w-[1px] h-10 bg-white/20 mx-1 rounded-full mb-1.5" />
+        <div className={`w-[1px] h-10 mx-1 rounded-full mb-1.5 ${isDarkMode ? 'bg-white/20' : 'bg-black/10'}`} />
         
         {/* Downloads */}
         <DockItem 

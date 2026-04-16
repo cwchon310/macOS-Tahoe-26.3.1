@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Wifi, Bluetooth, Moon, Sun, Volume2, Airplay, Battery, Zap } from 'lucide-react';
+import { Wifi, Bluetooth, Moon, Sun, Volume2, Airplay, Battery, Zap, Play, SkipBack, SkipForward, Music } from 'lucide-react';
 
 export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
   const [wifi, setWifi] = useState(true);
   const [bluetooth, setBluetooth] = useState(true);
   const [brightness, setBrightness] = useState(75);
   const [volume, setVolume] = useState(50);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   return (
     <AnimatePresence>
@@ -14,18 +15,19 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
         <>
           <div className="fixed inset-0 z-[9998]" onClick={onClose} />
           <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="fixed top-9 right-4 w-80 liquid-glass-dark rounded-[32px] window-shadow z-[9999] p-4 border border-white/10 grid grid-cols-2 gap-3"
+            initial={{ opacity: 0, y: -20, scale: 0.95, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -20, scale: 0.95, filter: 'blur(10px)' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed top-9 right-4 w-[340px] liquid-glass-dark rounded-[32px] window-shadow z-[9999] p-4 border border-white/20 grid grid-cols-2 gap-3"
           >
             {/* Top Left: Connectivity */}
-            <div className="bg-white/5 backdrop-blur-[100px] rounded-[24px] p-3 flex flex-col gap-3 border border-white/10 shadow-inner liquid-glass-dark">
+            <div className="bg-white/5 backdrop-blur-[100px] rounded-[24px] p-3 flex flex-col gap-3 border border-white/10 shadow-inner">
               <div 
-                className={`flex items-center gap-3 group cursor-pointer ${wifi ? '' : 'opacity-50'}`}
+                className={`flex items-center gap-3 group cursor-pointer transition-all ${wifi ? '' : 'opacity-50'}`}
                 onClick={() => setWifi(!wifi)}
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] group-active:scale-95 transition-all ${wifi ? 'bg-blue-500' : 'bg-white/10'}`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${wifi ? 'bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/10'}`}>
                   <Wifi size={14} className="text-white" />
                 </div>
                 <div className="flex flex-col">
@@ -34,10 +36,10 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
                 </div>
               </div>
               <div 
-                className={`flex items-center gap-3 group cursor-pointer ${bluetooth ? '' : 'opacity-50'}`}
+                className={`flex items-center gap-3 group cursor-pointer transition-all ${bluetooth ? '' : 'opacity-50'}`}
                 onClick={() => setBluetooth(!bluetooth)}
               >
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] group-active:scale-95 transition-all ${bluetooth ? 'bg-blue-500' : 'bg-white/10'}`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${bluetooth ? 'bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'bg-white/10'}`}>
                   <Bluetooth size={14} className="text-white" />
                 </div>
                 <div className="flex flex-col">
@@ -49,25 +51,24 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
 
             {/* Top Right: Focus & Battery */}
             <div className="flex flex-col gap-3">
-              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors liquid-glass-dark">
+              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors">
                 <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.5)]">
                   <Moon size={14} className="text-white" />
                 </div>
                 <span className="text-[11px] font-bold">Focus</span>
               </div>
-              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors liquid-glass-dark">
+              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors">
                 <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.5)]">
                   <Battery size={14} className="text-white" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[11px] font-bold">Battery</span>
-                  <span className="text-[9px] text-white/50">84%</span>
+                  <span className="text-[11px] font-bold">84%</span>
                 </div>
               </div>
             </div>
 
             {/* Sliders */}
-            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-4 flex flex-col gap-4 border border-white/10 shadow-inner liquid-glass-dark">
+            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-4 flex flex-col gap-4 border border-white/10 shadow-inner">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-center px-1">
                   <span className="text-[11px] font-bold opacity-60">Display</span>
@@ -105,8 +106,29 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
               </div>
             </div>
 
-            {/* Third-party App Control Mock */}
-            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner hover:bg-white/10 transition-colors cursor-default liquid-glass-dark">
+            {/* Media Playback */}
+            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-4 border border-white/10 shadow-inner">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg flex items-center justify-center">
+                <Music size={24} className="text-white" />
+              </div>
+              <div className="flex flex-col flex-1 overflow-hidden">
+                <span className="text-[12px] font-bold truncate">Starboy</span>
+                <span className="text-[10px] text-white/40 truncate">The Weeknd</span>
+              </div>
+              <div className="flex items-center gap-3 pr-2">
+                <SkipBack size={16} className="text-white/60 hover:text-white cursor-pointer transition-colors" />
+                <div 
+                  className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 cursor-pointer transition-all"
+                  onClick={() => setIsPlaying(!isPlaying)}
+                >
+                  {isPlaying ? <div className="w-3 h-3 bg-white rounded-sm" /> : <Play size={16} className="text-white ml-0.5" />}
+                </div>
+                <SkipForward size={16} className="text-white/60 hover:text-white cursor-pointer transition-colors" />
+              </div>
+            </div>
+
+            {/* Smart Home */}
+            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner hover:bg-white/10 transition-colors cursor-default">
               <div className="w-10 h-10 rounded-xl bg-orange-500 shadow-lg flex items-center justify-center">
                 <Zap size={20} className="text-white" />
               </div>

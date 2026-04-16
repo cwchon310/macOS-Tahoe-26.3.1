@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Command, Clipboard, Zap, FileText, Send, Video } from 'lucide-react';
+import { Search, Command, Clipboard, Zap, FileText, Send, Video, Loader2, Sparkles } from 'lucide-react';
 import { AppID } from '../types';
 import { useInstalledApps } from '../context/InstalledAppsContext';
+import { GoogleGenAI } from "@google/genai";
 
 interface SpotlightProps {
   isOpen: boolean;
@@ -10,11 +11,15 @@ interface SpotlightProps {
   onOpenApp: (id: AppID) => void;
 }
 
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
 export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp }) => {
   const { installedApps } = useInstalledApps();
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState<'global' | 'action' | 'file' | 'clipboard'>('global');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -24,22 +29,58 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
       setQuery('');
       setMode('global');
       setSelectedIndex(0);
+      setAiResponse(null);
     }
   }, [isOpen]);
 
   useEffect(() => {
     setSelectedIndex(0);
+    setAiResponse(null);
+
+    // AI Search Trigger (Debounced)
+    if (query.length > 3) {
+      const timer = setTimeout(() => handleAiSearch(query), 1000);
+      return () => clearTimeout(timer);
+    }
   }, [query]);
+
+  const handleAiSearch = async (q: string) => {
+    setIsAiLoading(true);
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: q,
+        config: {
+          systemInstruction: "You are Spotlight, the macOS search assistant. Provide extremely concise, helpful answers. If the user asks for a fact, give it. If they ask to do something, explain how briefly.",
+        },
+      });
+      setAiResponse(response.text || "No insights found.");
+    } catch (error) {
+      console.error("Spotlight AI Error:", error);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
+  const systemActions = [
+    { id: 'restart', name: 'Restart Mac', icon: 'https://img.icons8.com/fluency/96/restart.png', category: 'utilities' },
+    { id: 'sleep', name: 'Sleep', icon: 'https://img.icons8.com/fluency/96/moon.png', category: 'utilities' },
+    { id: 'empty-trash', name: 'Empty Trash', icon: 'https://img.icons8.com/fluency/96/trash.png', category: 'utilities' },
+    { id: 'lock', name: 'Lock Screen', icon: 'https://img.icons8.com/fluency/96/lock.png', category: 'utilities' },
+  ];
 
   const smartActions = [
     { id: 'summarize', name: 'Summarize Notes', icon: 'https://img.icons8.com/fluency/96/notes.png', category: 'productivity' },
     { id: 'genmoji', name: 'Create Genmoji', icon: 'https://img.icons8.com/fluency/96/happy.png', category: 'social' },
+    { id: 'writing-tools', name: 'Writing Tools', icon: 'https://img.icons8.com/fluency/96/edit.png', category: 'productivity' },
+    { id: 'image-playground', name: 'Image Playground', icon: 'https://img.icons8.com/fluency/96/image.png', category: 'entertainment' },
     { id: 'translate', name: 'Translate to Spanish', icon: 'https://img.icons8.com/fluency/96/google-translate.png', category: 'social' },
     { id: 'shortcut-email', name: 'Send Email to Adriana', icon: 'https://img.icons8.com/fluency/96/mail.png', category: 'social' },
   ];
 
-  const filteredApps = [
+  const filteredItems = [
     ...installedApps.map(app => ({ ...app, type: 'app' })),
+    ...systemActions.map(action => ({ ...action, type: 'system' })),
     ...smartActions.map(action => ({ ...action, type: 'action' }))
   ].filter(item => {
     const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase());
@@ -52,7 +93,7 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
     
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setSelectedIndex(prev => Math.min(prev + 1, filteredApps.length - 1));
+      setSelectedIndex(prev => Math.min(prev + 1, filteredItems.length - 1));
     }
     
     if (e.key === 'ArrowUp') {
@@ -60,13 +101,15 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
       setSelectedIndex(prev => Math.max(prev - 1, 0));
     }
 
-    if (e.key === 'Enter' && filteredApps.length > 0) {
-        const selected = filteredApps[selectedIndex];
+    if (e.key === 'Enter' && filteredItems.length > 0) {
+        const selected = filteredItems[selectedIndex];
         if (selected.type === 'app') {
           onOpenApp(selected.id as AppID);
+        } else if (selected.type === 'system') {
+          console.log('Executing system action:', selected.id);
+          // In a real app, trigger system events here
         } else {
-          // Handle smart action
-          console.log('Executing action:', selected.name);
+          console.log('Executing smart action:', selected.name);
         }
         onClose();
     }
@@ -93,7 +136,6 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
                 { id: 'social', label: 'Social', icon: Send },
                 { id: 'productivity', label: 'Productivity', icon: FileText },
                 { id: 'entertainment', label: 'Entertainment', icon: Video },
-                { id: 'reading', label: 'Reading', icon: FileText },
               ].map((m) => (
                 <button
                   key={m.id}
@@ -128,16 +170,36 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
                     <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Suggestions:</span>
                     <span className="text-[10px] font-bold text-blue-400/60 cursor-pointer hover:text-blue-400 transition-colors" onClick={() => setQuery('Summarize')}>Summarize Notes</span>
                     <span className="text-[10px] font-bold text-blue-400/60 cursor-pointer hover:text-blue-400 transition-colors" onClick={() => setQuery('Genmoji')}>Create Genmoji</span>
-                    <span className="text-[10px] font-bold text-blue-400/60 cursor-pointer hover:text-blue-400 transition-colors" onClick={() => setQuery('Translate')}>Translate to Spanish</span>
+                    <span className="text-[10px] font-bold text-blue-400/60 cursor-pointer hover:text-blue-400 transition-colors" onClick={() => setQuery('Empty Trash')}>Empty Trash</span>
                   </div>
                 )}
               </div>
+              {isAiLoading && <Loader2 size={20} className="text-blue-400 animate-spin" />}
             </div>
+
+            {/* AI Response Area */}
+            <AnimatePresence>
+              {aiResponse && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="px-6 pb-6 border-b border-white/10"
+                >
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-4 flex gap-3">
+                    <Sparkles size={18} className="text-blue-400 shrink-0 mt-1" />
+                    <p className="text-sm text-white/80 leading-relaxed italic">
+                      {aiResponse}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Results */}
             {query && (
               <div className="p-2 border-t border-white/10 bg-black/20 max-h-[400px] overflow-y-auto custom-scrollbar">
-                {filteredApps.map((item, index) => (
+                {filteredItems.map((item, index) => (
                     <div 
                         key={item.id}
                         onClick={() => { 
@@ -154,18 +216,20 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
                           <img src={item.icon} className="w-10 h-10 rounded-xl object-contain" alt={item.name} referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).src = 'https://img.icons8.com/fluency/96/console.png'; }} />
                           <div className="flex flex-col">
                             <span className="text-sm font-bold">{item.name}</span>
-                            {item.type === 'action' && <span className="text-[10px] text-white/40 font-medium uppercase tracking-wider">Smart Action</span>}
+                            <span className="text-[10px] text-white/40 font-medium uppercase tracking-wider">
+                              {item.type === 'action' ? 'Smart Action' : item.type === 'system' ? 'System Action' : 'Application'}
+                            </span>
                           </div>
                         </div>
                         {index === selectedIndex && (
                           <div className="flex items-center gap-1 px-2 py-1 bg-white/10 rounded-md text-[10px] font-bold text-white/60">
-                            <span>Open</span>
+                            <span>{item.type === 'app' ? 'Open' : 'Execute'}</span>
                             <Command size={10} />
                           </div>
                         )}
                     </div>
                 ))}
-                {filteredApps.length === 0 && (
+                {filteredItems.length === 0 && !isAiLoading && (
                   <div className="p-8 text-center flex flex-col items-center gap-2">
                     <Search size={32} className="text-white/10" />
                     <span className="text-white/40 text-sm font-medium">No results found for "{query}"</span>
@@ -181,8 +245,8 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
                 <span>Return to open</span>
               </div>
               <div className="flex items-center gap-1">
-                <Zap size={10} />
-                <span>Powered by Apple Intelligence</span>
+                <Sparkles size={10} className="text-blue-400" />
+                <span>Enhanced by Apple Intelligence</span>
               </div>
             </div>
           </motion.div>

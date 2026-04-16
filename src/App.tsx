@@ -13,6 +13,8 @@ import { Settings } from './components/apps/Settings';
 import { Notes } from './components/apps/Notes';
 import { TextEdit } from './components/apps/TextEdit';
 import { Phone } from './components/apps/Phone';
+import { Mail } from './components/apps/Mail';
+import { Widgets } from './components/Widgets';
 import { Siri } from './components/Siri';
 import { ControlCenter } from './components/ControlCenter';
 import { Spotlight } from './components/Spotlight';
@@ -20,7 +22,6 @@ import { Apps, ALL_APPS } from './components/apps/Apps';
 import { AppStore } from './components/apps/AppStore';
 import { WeChat } from './components/apps/WeChat';
 import { AboutThisMac } from './components/apps/AboutThisMac';
-import { Widgets } from './components/Widgets';
 import { DockPositionProvider } from './context/DockPositionContext';
 import { SystemProvider, useSystem } from './context/SystemContext';
 import { InstalledAppsProvider, useInstalledApps } from './context/InstalledAppsContext';
@@ -32,8 +33,16 @@ import { LoginScreen } from './components/LoginScreen';
 import { FileIcon } from './components/FileIcon';
 
 const Desktop = () => {
-  const { wallpaper } = useSystem();
+  const { wallpaper, isDarkMode } = useSystem();
   const { installedApps } = useInstalledApps();
+
+  React.useEffect(() => {
+    if (!isDarkMode) {
+      document.body.classList.add('light');
+    } else {
+      document.body.classList.remove('light');
+    }
+  }, [isDarkMode]);
   const [bootState, setBootState] = useState<'booting' | 'login' | 'desktop'>('booting');
   const [isSiriOpen, setIsSiriOpen] = React.useState(false);
   const [isControlCenterOpen, setIsControlCenterOpen] = React.useState(false);
@@ -67,6 +76,15 @@ const Desktop = () => {
 </plist>`,
       x: 20,
       y: 20
+    },
+    {
+      id: 'readme',
+      name: 'README.md',
+      type: 'file',
+      fileType: 'md',
+      content: '# macOS Tahoe\nWelcome to the future of macOS.',
+      x: 20,
+      y: 100
     }
   ]);
 
@@ -244,12 +262,20 @@ const Desktop = () => {
     switch (id) {
       case 'safari': return <Safari />;
       case 'phone': return <Phone />;
+      case 'mail': return <Mail />;
       case 'chrome': return <Safari />; // Use Safari component for Chrome
       case 'finder': return <Finder onOpenApp={handleOpenApp} />;
       case 'terminal': return <Terminal />;
       case 'calculator': return <Calculator />;
       case 'settings': return <Settings />;
       case 'notes': return <Notes />;
+      case 'messages': return <div className="flex-1 liquid-glass flex items-center justify-center text-white/40">Messages coming soon...</div>;
+      case 'maps': return <div className="flex-1 bg-white relative"><iframe src="https://www.google.com/maps/embed" className="absolute inset-0 w-full h-full border-none" /></div>;
+      case 'photos': return <div className="flex-1 liquid-glass flex items-center justify-center text-white/40">Photos coming soon...</div>;
+      case 'facetime': return <div className="flex-1 liquid-glass flex items-center justify-center text-white/40">FaceTime coming soon...</div>;
+      case 'calendar': return <div className="flex-1 liquid-glass flex items-center justify-center text-white/40">Calendar coming soon...</div>;
+      case 'music': return <div className="flex-1 liquid-glass flex items-center justify-center text-white/40">Music coming soon...</div>;
+      case 'tv': return <div className="flex-1 liquid-glass flex items-center justify-center text-white/40">TV coming soon...</div>;
       case 'textedit': return <TextEdit initialContent={props?.content} fileName={props?.name} />;
       case 'appstore': return <AppStore />;
       case 'wechat': return <WeChat />;
@@ -401,8 +427,9 @@ const Desktop = () => {
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px]" />
           <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/10 opacity-30" />
-          <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(255,255,255,0.08)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05),transparent)]" />
+          <div className="absolute inset-0 shadow-[inset_0_0_200px_rgba(255,255,255,0.1)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.08),transparent)]" />
+          <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_50%,rgba(255,255,255,0.02),transparent,rgba(255,255,255,0.02))]" />
         </div>
 
         <MenuBar 
@@ -550,6 +577,38 @@ const Desktop = () => {
             )}
           </AnimatePresence>
 
+          {/* Mission Control UI */}
+          <AnimatePresence>
+            {isMissionControlActive && (
+              <motion.div
+                initial={{ opacity: 0, y: -50 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -50 }}
+                className="fixed top-0 left-0 right-0 h-40 z-[10000] flex flex-col items-center pt-8 pointer-events-none"
+              >
+                <div className="flex gap-4 pointer-events-auto">
+                  {[1, 2].map((i) => (
+                    <div 
+                      key={i}
+                      className={`w-48 h-28 rounded-xl border-2 transition-all cursor-pointer overflow-hidden shadow-2xl ${
+                        i === 1 ? 'border-white/60 scale-105' : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <img src={wallpaper} className="w-full h-full object-cover" alt={`Desktop ${i}`} />
+                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">Desktop {i}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="w-48 h-28 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center hover:border-white/40 hover:bg-white/5 transition-all cursor-pointer">
+                    <span className="text-white/40 text-2xl">+</span>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <Widgets />
           <Siri isOpen={isSiriOpen} onClose={() => setIsSiriOpen(false)} />
           <ControlCenter isOpen={isControlCenterOpen} onClose={() => setIsControlCenterOpen(false)} />
           <Spotlight isOpen={isSpotlightOpen} onClose={() => setIsSpotlightOpen(false)} onOpenApp={handleOpenApp} />
