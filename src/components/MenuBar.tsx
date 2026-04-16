@@ -86,7 +86,7 @@ const MenuBarComponent: React.FC<MenuBarProps> = ({
   const currentMenus = MENUS[activeApp] || MENUS.default;
 
   return (
-    <div className="h-7 w-full bg-white/5 backdrop-blur-[100px] flex items-center justify-between px-4 text-[13px] font-medium text-white select-none z-[9999] border-b border-white/5 shadow-sm relative">
+    <div className="h-7 w-full liquid-glass flex items-center justify-between px-4 text-[13px] font-medium text-white select-none z-[9999] border-b border-white/5 shadow-sm relative">
       <div className="flex items-center gap-2">
         <div className="relative">
           <div 

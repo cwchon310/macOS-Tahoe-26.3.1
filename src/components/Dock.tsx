@@ -41,15 +41,14 @@ const DockItem: React.FC<DockItemProps> = ({ app, isOpen, isActive, onOpenApp, m
     return () => window.removeEventListener('resize', updatePosition);
   }, [app.id, setDockPosition]);
 
-  const { currentTime, minimizeEffect } = useSystem();
+  const { currentTime, minimizeEffect, magnificationFactor } = useSystem();
 
   const distance = useTransform(mouseX, (val: number) => {
     const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
     return val - bounds.x - bounds.width / 2;
   });
 
-  // Magnification is enabled when minimizeEffect is 'genie'
-  const magnificationFactor = minimizeEffect === 'genie' ? 2 : 1;
+  // Magnification is enabled when magnificationFactor > 1
   const targetWidth = 48 * magnificationFactor;
 
   const widthSync = useTransform(distance, [-150, 0, 150], [48, targetWidth, 48]);
@@ -192,7 +191,7 @@ export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, wind
   return (
     <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[10000]">
       <motion.div 
-        className="px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[100px] relative overflow-visible h-[76px] bg-white/5"
+        className="px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[100px] relative overflow-visible h-[76px] liquid-glass-dark"
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
       >

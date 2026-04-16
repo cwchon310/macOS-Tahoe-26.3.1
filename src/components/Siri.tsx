@@ -115,22 +115,21 @@ export const Siri: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
             />
           </motion.div>
 
-          {/* Floating Input Box */}
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
-            exit={{ opacity: 0, y: -20, scale: 0.95, x: '-50%' }}
-            className="fixed top-24 left-1/2 w-[600px] max-w-[90vw] z-[10001] flex flex-col gap-4"
-          >
-            {/* Response Area */}
-            <AnimatePresence>
-              {(response || isTyping) && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="bg-black/40 backdrop-blur-3xl border border-white/20 rounded-3xl p-6 text-white/90 shadow-2xl leading-relaxed"
-                >
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95, x: '-50%' }}
+              animate={{ opacity: 1, y: 0, scale: 1, x: '-50%' }}
+              exit={{ opacity: 0, y: -20, scale: 0.95, x: '-50%' }}
+              className="fixed top-24 left-1/2 w-[600px] max-w-[90vw] z-[10001] flex flex-col gap-4"
+            >
+              {/* Response Area */}
+              <AnimatePresence>
+                {(response || isTyping) && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="liquid-glass-dark rounded-3xl p-6 text-white/90 shadow-2xl leading-relaxed border border-white/20"
+                  >
                   {isTyping ? (
                     <div className="flex gap-2 items-center justify-center py-4">
                       <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 animate-bounce" />
@@ -146,11 +145,11 @@ export const Siri: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpe
               )}
             </AnimatePresence>
 
-            {/* Input Area */}
-            <form 
-              onSubmit={handleAsk} 
-              className="bg-black/40 backdrop-blur-3xl border border-white/20 rounded-full p-2 flex items-center gap-3 shadow-2xl relative overflow-hidden group"
-            >
+              {/* Input Area */}
+              <form 
+                onSubmit={handleAsk} 
+                className="liquid-glass-dark rounded-full p-2 flex items-center gap-3 shadow-2xl relative overflow-hidden group border border-white/20"
+              >
               {/* Animated Gradient Background for Input */}
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-pink-500/20 opacity-50 group-focus-within:opacity-100 transition-opacity blur-xl" />
               

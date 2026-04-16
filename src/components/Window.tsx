@@ -175,12 +175,12 @@ export const Window: React.FC<WindowProps> = memo(({
       animate={animation}
       exit={dockAnimation}
       transition={transitionSettings as any}
-      className={`absolute overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.15)] flex flex-col backdrop-blur-[60px] ${
+      className={`absolute overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.15)] flex flex-col backdrop-blur-[60px] liquid-glass-dark ${
         windowState.isMinimized ? 'pointer-events-none' : ''
       } ${isMissionControl ? 'cursor-pointer' : ''}`}
       style={{
         zIndex: isMissionControl ? 10000 + windowState.zIndex : windowState.zIndex,
-        backgroundColor: 'rgba(28, 28, 30, 0.75)',
+        backgroundColor: 'rgba(28, 28, 30, 0.65)',
         willChange: 'transform, opacity, width, height, left, top, filter',
       }}
       onPointerDown={(e) => {
@@ -248,7 +248,7 @@ export const Window: React.FC<WindowProps> = memo(({
 
       {/* Content */}
       <div 
-        className={`flex-1 overflow-hidden bg-[#1c1c1e]/80 backdrop-blur-3xl relative z-0 rounded-xl flex flex-col ${
+        className={`flex-1 overflow-hidden bg-[#1c1c1e]/60 backdrop-blur-3xl relative z-0 rounded-xl flex flex-col ${
           windowState.isShaded ? 'opacity-0 pointer-events-none' : 'opacity-100'
         } ${isMissionControl ? 'pointer-events-none' : ''}`}
       >

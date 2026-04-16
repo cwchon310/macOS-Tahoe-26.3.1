@@ -116,7 +116,8 @@ export const Settings: React.FC = () => {
     volume, setVolume,
     isWifiOn, toggleWifi,
     isBluetoothOn, toggleBluetooth,
-    minimizeEffect, setMinimizeEffect
+    minimizeEffect, setMinimizeEffect,
+    magnificationFactor, setMagnificationFactor
   } = useSystem();
 
   const [selected, setSelected] = useState('general');
@@ -402,6 +403,18 @@ export const Settings: React.FC = () => {
                         <option value="genie">Genie Effect</option>
                         <option value="scale">Scale Effect</option>
                       </select>
+                    </div>
+                    <div className="p-4 flex flex-col gap-4 hover:bg-white/5 cursor-default">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Magnification</span>
+                        <span className="text-xs text-white/40">{magnificationFactor.toFixed(1)}x</span>
+                      </div>
+                      <div className="px-2">
+                        <Slider 
+                          value={(magnificationFactor - 1) * 100} 
+                          onChange={(val) => setMagnificationFactor(1 + (val / 100))} 
+                        />
+                      </div>
                     </div>
                   </div>
                 </section>

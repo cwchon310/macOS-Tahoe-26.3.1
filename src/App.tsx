@@ -399,9 +399,10 @@ const Desktop = () => {
       >
         {/* Liquid Glass Overlay */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-          <div className="absolute inset-0 bg-black/5 backdrop-blur-[2px]" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-white/5" />
-          <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(255,255,255,0.05)]" />
+          <div className="absolute inset-0 bg-black/5 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 via-transparent to-white/10 opacity-30" />
+          <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(255,255,255,0.08)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.05),transparent)]" />
         </div>
 
         <MenuBar 

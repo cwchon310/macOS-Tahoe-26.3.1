@@ -28,6 +28,8 @@ interface SystemState {
   currentTime: Date;
   minimizeEffect: 'genie' | 'scale';
   setMinimizeEffect: (effect: 'genie' | 'scale') => void;
+  magnificationFactor: number;
+  setMagnificationFactor: (factor: number) => void;
 }
 
 const SystemContext = createContext<SystemState | undefined>(undefined);
@@ -63,6 +65,10 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [minimizeEffect, setMinimizeEffect] = useState<'genie' | 'scale'>(() => {
     return (localStorage.getItem('minimizeEffect') as 'genie' | 'scale') || 'genie';
   });
+  const [magnificationFactor, setMagnificationFactor] = useState<number>(() => {
+    const saved = localStorage.getItem('magnificationFactor');
+    return saved ? parseFloat(saved) : 1.5; // Default to 1.5x magnification
+  });
 
   useEffect(() => {
     localStorage.setItem('wallpaperConfig', JSON.stringify(wallpaperConfig));
@@ -71,6 +77,10 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     localStorage.setItem('minimizeEffect', minimizeEffect);
   }, [minimizeEffect]);
+
+  useEffect(() => {
+    localStorage.setItem('magnificationFactor', magnificationFactor.toString());
+  }, [magnificationFactor]);
 
   const [currentTime, setCurrentTime] = useState(new Date("2026-03-08T00:47:02-08:00"));
 
@@ -121,7 +131,9 @@ export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       toggleBluetooth,
       currentTime,
       minimizeEffect,
-      setMinimizeEffect
+      setMinimizeEffect,
+      magnificationFactor,
+      setMagnificationFactor
     }}>
       {children}
     </SystemContext.Provider>

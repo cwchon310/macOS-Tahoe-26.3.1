@@ -20,7 +20,7 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
             className="fixed top-9 right-4 w-80 liquid-glass-dark rounded-[32px] window-shadow z-[9999] p-4 border border-white/10 grid grid-cols-2 gap-3"
           >
             {/* Top Left: Connectivity */}
-            <div className="bg-white/5 backdrop-blur-[100px] rounded-[24px] p-3 flex flex-col gap-3 border border-white/10 shadow-inner">
+            <div className="bg-white/5 backdrop-blur-[100px] rounded-[24px] p-3 flex flex-col gap-3 border border-white/10 shadow-inner liquid-glass-dark">
               <div 
                 className={`flex items-center gap-3 group cursor-pointer ${wifi ? '' : 'opacity-50'}`}
                 onClick={() => setWifi(!wifi)}
@@ -49,13 +49,13 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
 
             {/* Top Right: Focus & Battery */}
             <div className="flex flex-col gap-3">
-              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors">
+              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors liquid-glass-dark">
                 <div className="w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.5)]">
                   <Moon size={14} className="text-white" />
                 </div>
                 <span className="text-[11px] font-bold">Focus</span>
               </div>
-              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors">
+              <div className="bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner cursor-default hover:bg-white/10 transition-colors liquid-glass-dark">
                 <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.5)]">
                   <Battery size={14} className="text-white" />
                 </div>
@@ -67,7 +67,7 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
             </div>
 
             {/* Sliders */}
-            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-4 flex flex-col gap-4 border border-white/10 shadow-inner">
+            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-4 flex flex-col gap-4 border border-white/10 shadow-inner liquid-glass-dark">
               <div className="flex flex-col gap-2">
                 <div className="flex justify-between items-center px-1">
                   <span className="text-[11px] font-bold opacity-60">Display</span>
@@ -106,7 +106,7 @@ export const ControlCenter: React.FC<{ isOpen: boolean; onClose: () => void }> =
             </div>
 
             {/* Third-party App Control Mock */}
-            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner hover:bg-white/10 transition-colors cursor-default">
+            <div className="col-span-2 bg-white/5 backdrop-blur-xl rounded-[24px] p-3 flex items-center gap-3 border border-white/10 shadow-inner hover:bg-white/10 transition-colors cursor-default liquid-glass-dark">
               <div className="w-10 h-10 rounded-xl bg-orange-500 shadow-lg flex items-center justify-center">
                 <Zap size={20} className="text-white" />
               </div>
