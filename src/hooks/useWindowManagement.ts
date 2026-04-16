@@ -38,6 +38,7 @@ const INITIAL_WINDOWS: Record<AppID, WindowState> = {
   textedit: { id: 'textedit', title: 'TextEdit', isOpen: false, isMinimized: false, isMaximized: false, zIndex: 10, x: 120, y: 120, width: 600, height: 500 },
   preview: { id: 'preview', title: 'Preview', isOpen: false, isMinimized: false, isMaximized: false, zIndex: 10, x: 140, y: 140, width: 800, height: 600 },
   quicktime: { id: 'quicktime', title: 'QuickTime Player', isOpen: false, isMinimized: false, isMaximized: false, zIndex: 10, x: 160, y: 160, width: 800, height: 500 },
+  phone: { id: 'phone', title: 'Phone', isOpen: false, isMinimized: false, isMaximized: false, zIndex: 10, x: 180, y: 180, width: 375, height: 667 },
 };
 
 export function useWindowManagement() {
@@ -47,20 +48,54 @@ export function useWindowManagement() {
 
   const focusWindow = useCallback((id: AppID) => {
     setMaxZIndex(prev => prev + 1);
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], zIndex: maxZIndex + 1, isMinimized: false, isOpen: true }
-    }));
+    setWindows(prev => {
+      const currentWindow = prev[id] || {
+        id,
+        title: id.charAt(0).toUpperCase() + id.slice(1),
+        isOpen: true,
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: maxZIndex + 1,
+        x: 100,
+        y: 100,
+        width: 800,
+        height: 600
+      };
+      return {
+        ...prev,
+        [id]: { ...currentWindow, zIndex: maxZIndex + 1, isMinimized: false, isOpen: true }
+      };
+    });
     setActiveApp(id);
   }, [maxZIndex]);
 
   const openApp = useCallback((id: AppID, props?: any) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], isOpen: true, isMinimized: false, props: props || prev[id].props }
-    }));
+    setWindows(prev => {
+      const currentWindow = prev[id] || {
+        id,
+        title: id.charAt(0).toUpperCase() + id.slice(1),
+        isOpen: false,
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: maxZIndex + 1,
+        x: 100,
+        y: 100,
+        width: 800,
+        height: 600
+      };
+      
+      return {
+        ...prev,
+        [id]: { 
+          ...currentWindow, 
+          isOpen: true, 
+          isMinimized: false, 
+          props: props || currentWindow.props 
+        }
+      };
+    });
     focusWindow(id);
-  }, [focusWindow]);
+  }, [focusWindow, maxZIndex]);
 
   const closeApp = useCallback((id: AppID) => {
     setWindows(prev => ({
@@ -87,38 +122,53 @@ export function useWindowManagement() {
   }, []);
 
   const toggleMaximize = useCallback((id: AppID) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], isMaximized: !prev[id].isMaximized }
-    }));
+    setWindows(prev => {
+      if (!prev[id]) return prev;
+      return {
+        ...prev,
+        [id]: { ...prev[id], isMaximized: !prev[id].isMaximized }
+      };
+    });
   }, []);
 
   const toggleShade = useCallback((id: AppID) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], isShaded: !prev[id].isShaded }
-    }));
+    setWindows(prev => {
+      if (!prev[id]) return prev;
+      return {
+        ...prev,
+        [id]: { ...prev[id], isShaded: !prev[id].isShaded }
+      };
+    });
   }, []);
 
   const updateWindowPosition = useCallback((id: AppID, x: number, y: number) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], x, y }
-    }));
+    setWindows(prev => {
+      if (!prev[id]) return prev;
+      return {
+        ...prev,
+        [id]: { ...prev[id], x, y }
+      };
+    });
   }, []);
 
   const updateWindowSize = useCallback((id: AppID, width: number, height: number) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], width, height }
-    }));
+    setWindows(prev => {
+      if (!prev[id]) return prev;
+      return {
+        ...prev,
+        [id]: { ...prev[id], width, height }
+      };
+    });
   }, []);
 
   const updateWindowGeometry = useCallback((id: AppID, x: number, y: number, width: number, height: number) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], x, y, width, height }
-    }));
+    setWindows(prev => {
+      if (!prev[id]) return prev;
+      return {
+        ...prev,
+        [id]: { ...prev[id], x, y, width, height }
+      };
+    });
   }, []);
 
   return {
