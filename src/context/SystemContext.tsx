@@ -34,7 +34,7 @@ const SystemContext = createContext<SystemState | undefined>(undefined);
 
 const DEFAULT_WALLPAPER: WallpaperConfig = {
   type: 'static',
-  url: 'https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?q=80&w=1920', // Lake Tahoe
+  url: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?auto=format&fit=crop&w=2560&q=80', // Surfer at sunset
 };
 
 export const SystemProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

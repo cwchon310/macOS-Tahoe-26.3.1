@@ -234,9 +234,9 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
   };
 
   return (
-    <div className="flex h-full bg-[#1e1e1e]/90 text-white overflow-hidden rounded-b-xl relative">
+    <div className="flex h-full bg-black/10 text-white overflow-hidden rounded-b-xl relative backdrop-blur-md">
       {/* Sidebar */}
-      <div className="w-[220px] bg-white/5 backdrop-blur-[80px] border-r border-black/20 flex flex-col pt-12 shrink-0">
+      <div className="w-[220px] liquid-glass border-r border-white/5 flex flex-col pt-12 shrink-0">
         <div className="px-3 mb-4">
           <div className="relative">
             <Search size={14} className="absolute left-2.5 top-1.5 text-white/40" />
@@ -281,14 +281,14 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
                         onDrop={(e) => item.path && handleDrop(e, item.path)}
                         className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all duration-200 cursor-default group active:scale-[0.98] relative overflow-hidden ${
                           isActive 
-                            ? 'bg-blue-500/15 text-blue-400' 
+                            ? 'bg-blue-500/20 text-blue-400 shadow-[inset_0_0_0_1px_rgba(96,165,250,0.2)]' 
                             : 'text-white/60 hover:bg-white/5 hover:text-white'
                         }`}
                       >
                         {isActive && (
                           <motion.div 
                             layoutId="active-sidebar-indicator"
-                            className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500 rounded-r-full"
+                            className="absolute left-0 top-2 bottom-2 w-1 bg-blue-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.5)]"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -315,9 +315,9 @@ export const Finder: React.FC<{ initialPath?: string; onOpenApp?: (id: AppID, pr
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col bg-[#1e1e1e] relative">
+      <div className="flex-1 flex flex-col bg-black/5 relative overflow-hidden">
         {/* Toolbar */}
-        <div className="h-[52px] border-b border-black/20 flex items-center px-4 justify-between bg-[#1e1e1e]/80 backdrop-blur-xl shrink-0 z-10">
+        <div className="h-[52px] border-b border-white/5 flex items-center px-4 justify-between liquid-glass shrink-0 z-10">
           <div className="flex items-center gap-4">
             <div className="flex gap-4 text-white/50">
               <ChevronLeft 

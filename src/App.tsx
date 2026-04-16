@@ -12,6 +12,7 @@ import { Calculator } from './components/apps/Calculator';
 import { Settings } from './components/apps/Settings';
 import { Notes } from './components/apps/Notes';
 import { TextEdit } from './components/apps/TextEdit';
+import { Phone } from './components/apps/Phone';
 import { Siri } from './components/Siri';
 import { ControlCenter } from './components/ControlCenter';
 import { Spotlight } from './components/Spotlight';
@@ -242,6 +243,7 @@ const Desktop = () => {
   const renderAppContent = React.useCallback((id: AppID, props?: any) => {
     switch (id) {
       case 'safari': return <Safari />;
+      case 'phone': return <Phone />;
       case 'chrome': return <Safari />; // Use Safari component for Chrome
       case 'finder': return <Finder onOpenApp={handleOpenApp} />;
       case 'terminal': return <Terminal />;

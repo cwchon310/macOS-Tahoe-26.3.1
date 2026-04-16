@@ -174,12 +174,17 @@ export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, wind
     
     // We want to show specific apps in the dock to match the image
     const pinnedAppIds = [
-      'safari', 'messages', 'mail', 'maps', 'photos', 'facetime', 
+      'safari', 'phone', 'messages', 'mail', 'maps', 'photos', 'facetime', 
       'calendar', 'contacts', 'reminders', 'notes', 'freeform', 'tv', 
       'music', 'podcasts', 'appstore', 'settings'
     ];
     
-    const otherApps = pinnedAppIds.map(id => installedApps.find(app => app.id === id)).filter(Boolean) as any[];
+    const otherApps = pinnedAppIds.map(id => {
+      if (id === 'phone') {
+        return { id: 'phone', icon: 'https://img.icons8.com/fluency/96/phone.png', name: 'Phone' };
+      }
+      return installedApps.find(app => app.id === id);
+    }).filter(Boolean) as any[];
     
     return [...coreApps, ...otherApps];
   }, [installedApps]);
@@ -187,10 +192,11 @@ export const Dock: React.FC<DockProps> = ({ onOpenApp, activeApp, openApps, wind
   return (
     <div className="fixed bottom-2 left-1/2 -translate-x-1/2 z-[10000]">
       <motion.div 
-        className="px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[60px] relative overflow-visible h-[76px] bg-white/10"
+        className="px-3 pb-2 pt-3 rounded-[24px] flex items-end gap-2 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-[100px] relative overflow-visible h-[76px] bg-white/5"
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
       >
+        <div className="absolute inset-0 rounded-[24px] bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
         {dockApps.map((app) => (
           <DockItem 
             key={app.id} 

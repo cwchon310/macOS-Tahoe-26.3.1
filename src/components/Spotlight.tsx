@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Command, Clipboard, Zap, FileText, Send } from 'lucide-react';
+import { Search, Command, Clipboard, Zap, FileText, Send, Video } from 'lucide-react';
 import { AppID } from '../types';
 import { useInstalledApps } from '../context/InstalledAppsContext';
 
@@ -31,9 +31,21 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
     setSelectedIndex(0);
   }, [query]);
 
-  const filteredApps = installedApps.filter(app => 
-    app.name.toLowerCase().includes(query.toLowerCase())
-  );
+  const smartActions = [
+    { id: 'summarize', name: 'Summarize Notes', icon: 'https://img.icons8.com/fluency/96/notes.png', category: 'productivity' },
+    { id: 'genmoji', name: 'Create Genmoji', icon: 'https://img.icons8.com/fluency/96/happy.png', category: 'social' },
+    { id: 'translate', name: 'Translate to Spanish', icon: 'https://img.icons8.com/fluency/96/google-translate.png', category: 'social' },
+    { id: 'shortcut-email', name: 'Send Email to Adriana', icon: 'https://img.icons8.com/fluency/96/mail.png', category: 'social' },
+  ];
+
+  const filteredApps = [
+    ...installedApps.map(app => ({ ...app, type: 'app' })),
+    ...smartActions.map(action => ({ ...action, type: 'action' }))
+  ].filter(item => {
+    const matchesQuery = item.name.toLowerCase().includes(query.toLowerCase());
+    const matchesMode = mode === 'global' || item.category === mode;
+    return matchesQuery && matchesMode;
+  });
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') onClose();
@@ -49,7 +61,13 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
     }
 
     if (e.key === 'Enter' && filteredApps.length > 0) {
-        onOpenApp(filteredApps[selectedIndex].id as AppID);
+        const selected = filteredApps[selectedIndex];
+        if (selected.type === 'app') {
+          onOpenApp(selected.id as AppID);
+        } else {
+          // Handle smart action
+          console.log('Executing action:', selected.name);
+        }
         onClose();
     }
   };
@@ -67,18 +85,20 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
             className="fixed top-[20%] left-1/2 -translate-x-1/2 w-[680px] liquid-glass-dark rounded-[28px] window-shadow z-[10002] overflow-hidden border border-white/20"
             onKeyDown={handleKeyDown}
           >
-            {/* Mode Tabs */}
-            <div className="flex items-center gap-1 p-2 bg-white/5 border-b border-white/10">
+            {/* Categories / Mode Tabs */}
+            <div className="flex items-center gap-1 p-2 bg-white/5 border-b border-white/10 overflow-x-auto no-scrollbar">
               {[
-                { id: 'global', label: 'Global', icon: Search },
-                { id: 'action', label: 'Actions', icon: Zap },
-                { id: 'file', label: 'Files', icon: FileText },
-                { id: 'clipboard', label: 'Clipboard', icon: Clipboard },
+                { id: 'global', label: 'All', icon: Search },
+                { id: 'utilities', label: 'Utilities', icon: Zap },
+                { id: 'social', label: 'Social', icon: Send },
+                { id: 'productivity', label: 'Productivity', icon: FileText },
+                { id: 'entertainment', label: 'Entertainment', icon: Video },
+                { id: 'reading', label: 'Reading', icon: FileText },
               ].map((m) => (
                 <button
                   key={m.id}
                   onClick={() => setMode(m.id as any)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all whitespace-nowrap ${
                     mode === m.id ? 'bg-white/20 text-white shadow-lg' : 'text-white/40 hover:bg-white/10'
                   }`}
                 >
@@ -86,51 +106,70 @@ export const Spotlight: React.FC<SpotlightProps> = ({ isOpen, onClose, onOpenApp
                   {m.label}
                 </button>
               ))}
-              <div className="ml-auto flex items-center gap-2 px-3 text-[10px] text-white/20 font-mono">
-                <Command size={10} /> 1-4
-              </div>
             </div>
 
             {/* Input Area */}
             <div className="p-6 flex items-center gap-4">
               <div className="text-white/40">
-                {mode === 'global' && <Search size={28} />}
-                {mode === 'action' && <Zap size={28} className="text-yellow-400" />}
-                {mode === 'file' && <FileText size={28} className="text-blue-400" />}
-                {mode === 'clipboard' && <Clipboard size={28} className="text-green-400" />}
+                <Search size={28} className="text-blue-400" />
               </div>
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={
-                  mode === 'action' ? 'Type a command (e.g., "SE" to send email)...' : 
-                  mode === 'clipboard' ? 'Search clipboard history...' :
-                  'Spotlight Search'
-                }
-                className="flex-1 bg-transparent border-none outline-none text-2xl text-white placeholder:text-white/20 font-medium tracking-tight"
-              />
+              <div className="flex-1 flex flex-col">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Spotlight Search"
+                  className="bg-transparent border-none outline-none text-2xl text-white placeholder:text-white/20 font-medium tracking-tight"
+                />
+                {!query && (
+                  <div className="flex gap-2 mt-2">
+                    <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Suggestions:</span>
+                    <span className="text-[10px] font-bold text-blue-400/60 cursor-pointer hover:text-blue-400 transition-colors" onClick={() => setQuery('Summarize')}>Summarize Notes</span>
+                    <span className="text-[10px] font-bold text-blue-400/60 cursor-pointer hover:text-blue-400 transition-colors" onClick={() => setQuery('Genmoji')}>Create Genmoji</span>
+                    <span className="text-[10px] font-bold text-blue-400/60 cursor-pointer hover:text-blue-400 transition-colors" onClick={() => setQuery('Translate')}>Translate to Spanish</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Results */}
             {query && (
-              <div className="p-2 border-t border-white/10 bg-black/20 max-h-[300px] overflow-y-auto">
-                {filteredApps.map((app, index) => (
+              <div className="p-2 border-t border-white/10 bg-black/20 max-h-[400px] overflow-y-auto custom-scrollbar">
+                {filteredApps.map((item, index) => (
                     <div 
-                        key={app.id}
-                        onClick={() => { onOpenApp(app.id as AppID); onClose(); }}
-                        className={`flex items-center gap-3 p-3 rounded-2xl border border-transparent group cursor-pointer ${
+                        key={item.id}
+                        onClick={() => { 
+                          if (item.type === 'app') {
+                            onOpenApp(item.id as AppID);
+                          }
+                          onClose(); 
+                        }}
+                        className={`flex items-center justify-between p-3 rounded-2xl border border-transparent group cursor-pointer transition-all ${
                           index === selectedIndex ? 'bg-blue-500/20 border-blue-500/30' : 'hover:bg-blue-500/20 hover:border-blue-500/30'
                         }`}
                     >
-                        <img src={app.icon} className="w-10 h-10 rounded-xl object-contain" alt={app.name} referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).src = 'https://img.icons8.com/fluency/96/console.png'; }} />
-                        <span className="text-sm font-bold">{app.name}</span>
+                        <div className="flex items-center gap-3">
+                          <img src={item.icon} className="w-10 h-10 rounded-xl object-contain" alt={item.name} referrerPolicy="no-referrer" onError={(e) => { (e.target as HTMLImageElement).src = 'https://img.icons8.com/fluency/96/console.png'; }} />
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold">{item.name}</span>
+                            {item.type === 'action' && <span className="text-[10px] text-white/40 font-medium uppercase tracking-wider">Smart Action</span>}
+                          </div>
+                        </div>
+                        {index === selectedIndex && (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-white/10 rounded-md text-[10px] font-bold text-white/60">
+                            <span>Open</span>
+                            <Command size={10} />
+                          </div>
+                        )}
                     </div>
                 ))}
                 {filteredApps.length === 0 && (
-                  <div className="p-4 text-center text-white/40">No results found</div>
+                  <div className="p-8 text-center flex flex-col items-center gap-2">
+                    <Search size={32} className="text-white/10" />
+                    <span className="text-white/40 text-sm font-medium">No results found for "{query}"</span>
+                  </div>
                 )}
               </div>
             )}
